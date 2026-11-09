@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+ext/
+local_data/
+results_v2/final/neural_ckpt/
+results_v2/final/neural_preds/
+results_v2/final/models.pkl
+*.npz
+*.pt
+report/*.log
+report/*.aux

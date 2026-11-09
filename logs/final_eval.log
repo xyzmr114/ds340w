@@ -1,0 +1,165 @@
+block-seasons with cubes: train 160, val 10, test 64
+  cache sample blk 75: 2023:9000 rows 0.0s
+  cache sample blk 179: 2018:9000 rows 0.0s, 2019:9000 rows 0.0s, 2020:7500 rows 1.4s, 2021:9000 rows 1.5s, 2022:9000 rows 1.4s
+  cache sample blk 287: 2023:9000 rows 0.0s
+  cache sample blk 313: 2018:9000 rows 0.0s, 2019:9000 rows 1.5s, 2020:7500 rows 1.4s, 2021:8500 rows 1.5s, 2022:9000 rows 1.4s
+  cache sample blk 315: 2018:9000 rows 0.0s, 2019:9000 rows 0.0s, 2020:7500 rows 1.5s, 2021:8500 rows 1.4s, 2022:9000 rows 1.5s
+  cache sample blk 320: 2023:9000 rows 0.0s
+  cache sample blk 321: 2023:9000 rows 1.5s
+  cache sample blk 384: 2018:9000 rows 1.5s, 2019:9000 rows 1.5s, 2020:9000 rows 1.9s, 2021:9000 rows 1.6s, 2022:9000 rows 1.4s
+  cache sample blk 419: 2018:9000 rows 1.6s, 2019:9000 rows 1.7s, 2020:9000 rows 1.7s, 2021:9000 rows 2.2s, 2022:9000 rows 1.5s
+  cache sample blk 424: 2018:8500 rows 1.3s, 2019:7500 rows 1.7s, 2020:9000 rows 1.6s, 2021:8000 rows 1.4s, 2022:9000 rows 1.4s
+  cache sample blk 449: 2018:9000 rows 1.7s, 2019:9000 rows 1.3s, 2020:9000 rows 1.2s, 2021:8500 rows 1.0s, 2022:9000 rows 1.0s
+  cache sample blk 482: 2023:9000 rows 1.6s
+  cache sample blk 483: 2023:9000 rows 1.4s
+  cache sample blk 484: 2018:9000 rows 1.3s, 2019:9000 rows 1.2s, 2020:9000 rows 1.1s, 2021:8174 rows 1.1s, 2022:9000 rows 1.4s
+  cache sample blk 491: 2018:9000 rows 1.2s, 2019:9000 rows 1.2s, 2020:9000 rows 1.1s, 2021:8000 rows 1.2s, 2022:9000 rows 1.4s
+  cache sample blk 527: 2018:8948 rows 1.4s, 2019:8820 rows 1.2s, 2020:9000 rows 1.3s, 2021:8084 rows 1.9s, 2022:9000 rows 1.8s
+  cache sample blk 546: 2023:9000 rows 1.2s
+  cache sample blk 550: 2018:9000 rows 1.2s, 2019:9000 rows 1.7s, 2020:9000 rows 1.8s, 2021:9000 rows 1.8s, 2022:9000 rows 1.9s
+  cache sample blk 554: 2018:9000 rows 1.6s, 2019:9000 rows 1.8s, 2020:9000 rows 1.8s, 2021:9000 rows 1.9s, 2022:9000 rows 1.5s
+  cache sample blk 560: 2018:9000 rows 1.7s, 2019:9000 rows 1.7s, 2020:9000 rows 1.3s, 2021:8000 rows 1.6s, 2022:9000 rows 1.2s
+  cache sample blk 561: 2018:9000 rows 1.5s, 2019:9000 rows 1.4s, 2020:9000 rows 1.3s, 2021:9000 rows 1.2s, 2022:9000 rows 1.1s
+  cache sample blk 585: 2018:9000 rows 1.3s, 2019:9000 rows 1.4s, 2020:9000 rows 1.3s, 2021:9000 rows 1.1s, 2022:9000 rows 1.4s
+  cache sample blk 594: 2018:9000 rows 1.1s, 2019:9000 rows 1.3s, 2020:9000 rows 1.6s, 2021:9000 rows 1.2s, 2022:9000 rows 1.3s
+  cache sample blk 596: 2018:9000 rows 1.4s, 2019:9000 rows 1.4s, 2020:9000 rows 1.2s, 2021:9000 rows 1.3s, 2022:9000 rows 1.4s
+  cache sample blk 599: 2018:9000 rows 1.3s, 2019:9000 rows 1.2s, 2020:9000 rows 1.3s, 2021:9000 rows 1.2s, 2022:9000 rows 1.5s
+  cache sample blk 607: 2023:9000 rows 1.1s
+  cache sample blk 613: 2018:8500 rows 1.5s, 2019:9000 rows 1.3s, 2020:9000 rows 1.1s, 2021:9000 rows 1.2s, 2022:9000 rows 1.0s
+  cache sample blk 614: 2018:8500 rows 1.4s, 2019:9000 rows 1.3s, 2020:9000 rows 1.1s, 2021:9000 rows 1.1s, 2022:9000 rows 1.0s
+  cache sample blk 617: 2023:9000 rows 1.3s
+  cache sample blk 618: 2018:9000 rows 1.2s, 2019:9000 rows 1.1s, 2020:9000 rows 1.1s, 2021:9000 rows 1.1s, 2022:9000 rows 1.0s
+  cache sample blk 619: 2018:9000 rows 1.1s, 2019:9000 rows 1.2s, 2020:9000 rows 1.0s, 2021:9000 rows 1.2s, 2022:9000 rows 1.2s
+  cache sample blk 621: 2018:9000 rows 1.1s, 2019:9000 rows 1.0s, 2020:9000 rows 1.0s, 2021:9000 rows 1.1s, 2022:9000 rows 1.2s
+  cache sample blk 625: 2018:9000 rows 1.0s, 2019:9000 rows 1.1s, 2020:9000 rows 1.2s, 2021:9000 rows 1.2s, 2022:9000 rows 1.2s
+  cache sample blk 634: 2018:9000 rows 1.2s, 2019:7500 rows 1.1s, 2020:9000 rows 1.1s, 2021:9000 rows 1.1s, 2022:9000 rows 1.1s
+  cache sample blk 640: 2018:7500 rows 1.1s, 2019:9000 rows 1.1s, 2020:9000 rows 1.1s, 2021:9000 rows 1.0s, 2022:9000 rows 1.0s
+  cache sample blk 670: 2018:9000 rows 1.1s, 2019:7500 rows 1.1s, 2020:9000 rows 1.1s, 2021:9000 rows 1.1s, 2022:9000 rows 1.4s
+  cache sample blk 700: 2018:9000 rows 1.1s, 2019:9000 rows 1.2s, 2020:9000 rows 1.6s, 2021:9000 rows 1.8s, 2022:9000 rows 2.0s
+  cache sample blk 707: 2018:7500 rows 1.1s, 2019:9000 rows 1.2s, 2020:9000 rows 1.3s, 2021:9000 rows 1.6s, 2022:9000 rows 1.9s
+  cache sample blk 735: 2018:9000 rows 1.3s, 2019:9000 rows 1.6s, 2020:9000 rows 1.9s, 2021:9000 rows 1.5s, 2022:9000 rows 1.4s
+  cache sample blk 738: 2018:9000 rows 1.4s, 2019:9000 rows 1.4s, 2020:9000 rows 1.7s, 2021:9000 rows 1.9s, 2022:9000 rows 1.7s
+  cache sample blk 769: 2018:9000 rows 1.6s, 2019:9000 rows 1.6s, 2020:9000 rows 2.0s, 2021:9000 rows 1.7s, 2022:9000 rows 1.8s
+  cache sample blk 841: 2023:8907 rows 1.7s
+  cache full   blk 142: 2024:229010 rows 7.3s, 2025:517194 rows 5.1s
+  cache full   blk 176: 2024:510290 rows 8.3s, 2025:1018964 rows 8.7s
+  cache full   blk 210: 2024:305908 rows 6.6s, 2025:620979 rows 5.5s
+  cache full   blk 211: 2024:385845 rows 6.9s, 2025:690966 rows 6.2s
+  cache full   blk 244: 2024:286053 rows 7.0s, 2025:538966 rows 5.0s
+  cache full   blk 245: 2024:641690 rows 8.9s, 2025:992343 rows 7.7s
+  cache full   blk 246: 2024:533220 rows 8.6s, 2025:747112 rows 7.1s
+  cache full   blk 358: 2024:708522 rows 9.9s, 2025:768034 rows 6.9s
+  cache full   blk 390: 2024:909735 rows 10.4s, 2025:1054752 rows 7.9s
+  cache full   blk 391: 2024:1074699 rows 11.1s, 2025:1178920 rows 9.4s
+  cache full   blk 478: 2024:1592897 rows 15.0s, 2025:1633515 rows 13.4s
+  cache full   blk 489: 2024:436623 rows 7.1s, 2025:453972 rows 4.0s
+  cache full   blk 512: 2024:939290 rows 11.0s, 2025:793845 rows 7.3s
+  cache full   blk 522: 2024:1666460 rows 14.7s, 2025:1548241 rows 10.3s
+  cache full   blk 557: 2024:681773 rows 9.2s, 2025:913373 rows 7.0s
+  cache full   blk 583: 2024:867306 rows 10.2s, 2025:1316520 rows 9.6s
+  cache full   blk 591: 2024:430720 rows 7.0s, 2025:601593 rows 5.2s
+  cache full   blk 601: 2024:332801 rows 6.2s, 2025:161781 rows 2.3s
+  cache full   blk 626: 2024:566664 rows 9.0s, 2025:830260 rows 6.0s
+  cache full   blk 627: 2024:421545 rows 7.9s, 2025:448705 rows 4.0s
+  cache full   blk 630: 2024:701223 rows 9.5s, 2025:751760 rows 6.4s
+  cache full   blk 631: 2024:619302 rows 7.7s, 2025:483307 rows 4.7s
+  cache full   blk 664: 2024:669409 rows 8.4s, 2025:712958 rows 6.1s
+  cache full   blk 676: 2024:334020 rows 6.4s, 2025:531511 rows 4.9s
+  cache full   blk 689: 2024:1158185 rows 12.7s, 2025:1641059 rows 11.9s
+  cache full   blk 690: 2024:1681420 rows 15.1s, 2025:1107418 rows 8.6s
+  cache full   blk 691: 2024:1737807 rows 15.7s, 2025:1320866 rows 10.2s
+  cache full   blk 694: 2024:497084 rows 8.2s, 2025:496404 rows 6.0s
+  cache full   blk 723: 2024:802826 rows 11.4s, 2025:1039207 rows 8.3s
+  cache full   blk 764: 2024:443761 rows 8.7s, 2025:499170 rows 4.7s
+  cache full   blk 765: 2024:528167 rows 7.2s, 2025:537491 rows 4.6s
+  cache full   blk 798: 2024:650541 rows 7.9s, 2025:848611 rows 6.8s
+extract: 264s
+C:\Users\harsh\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\linear_model\_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 6.493384319128381e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+C:\Users\harsh\AppData\Local\Programs\Python\Python313\Lib\site-packages\sklearn\linear_model\_ridge.py:227: LinAlgWarning: An ill-conditioned matrix detected: slice 0 has rcond = 7.305055760298274e-08.
+  return linalg.solve(A, Xy, assume_a="pos", overwrite_a=True).T
+  ridge alpha=0.01 val MAE 0.0237
+  gbm_base q0.1: lr=0.05 iters=665 val pinball 0.00532 (274.5s)
+  gbm_base q0.5: lr=0.05 iters=627 val pinball 0.01069 (357.0s)
+  gbm_base q0.9: lr=0.05 iters=352 val pinball 0.00499 (171.2s)
+  gbm_rain q0.1: iters=93 val pinball 0.00543 (train cover 1.00, 48.1s)
+  gbm_rain q0.5: iters=151 val pinball 0.01094 (train cover 1.00, 84.2s)
+  gbm_rain q0.9: iters=206 val pinball 0.00508 (train cover 1.00, 144.3s)
+  gbm_soil q0.1: iters=240 val pinball 0.00543 (train cover 1.00, 106.7s)
+  gbm_soil q0.5: iters=176 val pinball 0.01083 (train cover 1.00, 61.7s)
+  gbm_soil q0.9: iters=141 val pinball 0.00505 (train cover 1.00, 50.1s)
+  gbm_temp q0.1: iters=150 val pinball 0.00533 (train cover 1.00, 51.9s)
+  gbm_temp q0.5: iters=359 val pinball 0.01067 (train cover 1.00, 68.6s)
+  gbm_temp q0.9: iters=250 val pinball 0.00499 (train cover 1.00, 50.9s)
+  gbm_chirps q0.1: iters=398 val pinball 0.00525 (train cover 1.00, 57.4s)
+  gbm_chirps q0.5: iters=214 val pinball 0.01079 (train cover 1.00, 57.3s)
+  gbm_chirps q0.9: iters=113 val pinball 0.00514 (train cover 1.00, 45.4s)
+  gbm_all q0.1: iters=793 val pinball 0.00518 (train cover 1.00, 50.6s)
+  gbm_all q0.5: iters=137 val pinball 0.01076 (train cover 1.00, 53.8s)
+  gbm_all q0.9: iters=130 val pinball 0.00507 (train cover 1.00, 47.8s)
+  scored blk 142 2024: 229010 of 229010 pixel-rows, wx=5/5, 10.5s
+  scored blk 142 2025: 517194 of 517194 pixel-rows, wx=5/5, 22.9s
+  scored blk 176 2024: 510290 of 510290 pixel-rows, wx=5/5, 22.6s
+  scored blk 176 2025: 1018964 of 1018964 pixel-rows, wx=5/5, 48.8s
+  scored blk 210 2024: 305908 of 305908 pixel-rows, wx=5/5, 13.8s
+  scored blk 210 2025: 620979 of 620979 pixel-rows, wx=5/5, 32.5s
+  scored blk 211 2024: 385845 of 385845 pixel-rows, wx=5/5, 22.3s
+  scored blk 211 2025: 690966 of 690966 pixel-rows, wx=5/5, 32.3s
+  scored blk 244 2024: 286053 of 286053 pixel-rows, wx=5/5, 14.4s
+  scored blk 244 2025: 538966 of 538966 pixel-rows, wx=5/5, 24.8s
+  scored blk 245 2024: 641690 of 641690 pixel-rows, wx=5/5, 31.8s
+  scored blk 245 2025: 992343 of 992343 pixel-rows, wx=5/5, 46.4s
+  scored blk 246 2024: 533220 of 533220 pixel-rows, wx=5/5, 26.0s
+  scored blk 246 2025: 747112 of 747112 pixel-rows, wx=5/5, 50.4s
+  scored blk 358 2024: 708522 of 708522 pixel-rows, wx=5/5, 65.3s
+  scored blk 358 2025: 768034 of 768034 pixel-rows, wx=5/5, 56.8s
+  scored blk 390 2024: 909735 of 909735 pixel-rows, wx=5/5, 46.6s
+  scored blk 390 2025: 1054752 of 1054752 pixel-rows, wx=5/5, 57.6s
+  scored blk 391 2024: 1074699 of 1074699 pixel-rows, wx=5/5, 70.3s
+  scored blk 391 2025: 1178920 of 1178920 pixel-rows, wx=5/5, 79.0s
+  scored blk 478 2024: 1592897 of 1592897 pixel-rows, wx=5/5, 91.7s
+  scored blk 478 2025: 1633515 of 1633515 pixel-rows, wx=5/5, 158.0s
+  scored blk 489 2024: 436623 of 436623 pixel-rows, wx=5/5, 39.6s
+  scored blk 489 2025: 453972 of 453972 pixel-rows, wx=5/5, 27.6s
+  scored blk 512 2024: 939290 of 939290 pixel-rows, wx=5/5, 48.2s
+  scored blk 512 2025: 793845 of 793845 pixel-rows, wx=5/5, 42.2s
+  scored blk 522 2024: 1666460 of 1666460 pixel-rows, wx=5/5, 95.6s
+  scored blk 522 2025: 1548241 of 1548241 pixel-rows, wx=5/5, 90.3s
+  scored blk 557 2024: 681773 of 681773 pixel-rows, wx=5/5, 32.3s
+  scored blk 557 2025: 913373 of 913373 pixel-rows, wx=5/5, 60.1s
+  scored blk 583 2024: 867306 of 867306 pixel-rows, wx=5/5, 48.3s
+  scored blk 583 2025: 1316520 of 1316520 pixel-rows, wx=5/5, 73.0s
+  scored blk 591 2024: 430720 of 430720 pixel-rows, wx=5/5, 27.6s
+  scored blk 591 2025: 601593 of 601593 pixel-rows, wx=5/5, 54.0s
+  scored blk 601 2024: 332801 of 332801 pixel-rows, wx=5/5, 22.9s
+  scored blk 601 2025: 161781 of 161781 pixel-rows, wx=5/5, 12.6s
+  scored blk 626 2024: 566664 of 566664 pixel-rows, wx=5/5, 33.3s
+  scored blk 626 2025: 830260 of 830260 pixel-rows, wx=5/5, 51.8s
+  scored blk 627 2024: 421545 of 421545 pixel-rows, wx=5/5, 34.4s
+  scored blk 627 2025: 448705 of 448705 pixel-rows, wx=5/5, 22.3s
+  scored blk 630 2024: 701223 of 701223 pixel-rows, wx=5/5, 38.2s
+  scored blk 630 2025: 751760 of 751760 pixel-rows, wx=5/5, 59.2s
+  scored blk 631 2024: 619302 of 619302 pixel-rows, wx=5/5, 40.9s
+  scored blk 631 2025: 483307 of 483307 pixel-rows, wx=5/5, 28.0s
+  scored blk 664 2024: 669409 of 669409 pixel-rows, wx=5/5, 38.8s
+  scored blk 664 2025: 712958 of 712958 pixel-rows, wx=5/5, 64.0s
+  scored blk 676 2024: 334020 of 334020 pixel-rows, wx=5/5, 23.5s
+  scored blk 676 2025: 531511 of 531511 pixel-rows, wx=5/5, 36.7s
+  scored blk 689 2024: 1158185 of 1158185 pixel-rows, wx=5/5, 73.1s
+  scored blk 689 2025: 1641059 of 1641059 pixel-rows, wx=5/5, 128.9s
+  scored blk 690 2024: 1681420 of 1681420 pixel-rows, wx=5/5, 126.1s
+  scored blk 690 2025: 1107418 of 1107418 pixel-rows, wx=5/5, 96.2s
+  scored blk 691 2024: 1737807 of 1737807 pixel-rows, wx=5/5, 103.1s
+  scored blk 691 2025: 1320866 of 1320866 pixel-rows, wx=5/5, 75.8s
+  scored blk 694 2024: 497084 of 497084 pixel-rows, wx=5/5, 29.1s
+  scored blk 694 2025: 496404 of 496404 pixel-rows, wx=5/5, 26.1s
+  scored blk 723 2024: 802826 of 802826 pixel-rows, wx=5/5, 66.4s
+  scored blk 723 2025: 1039207 of 1039207 pixel-rows, wx=5/5, 72.8s
+  scored blk 764 2024: 443761 of 443761 pixel-rows, wx=5/5, 26.5s
+  scored blk 764 2025: 499170 of 499170 pixel-rows, wx=5/5, 27.5s
+  scored blk 765 2024: 528167 of 528167 pixel-rows, wx=5/5, 27.4s
+  scored blk 765 2025: 537491 of 537491 pixel-rows, wx=5/5, 28.4s
+  scored blk 798 2024: 650541 of 650541 pixel-rows, wx=5/5, 40.1s
+  scored blk 798 2025: 848611 of 848611 pixel-rows, wx=5/5, 55.8s
+rows.csv: 13644 rows; models ['climatology', 'gbm_all', 'gbm_base', 'gbm_chirps', 'gbm_rain', 'gbm_soil', 'gbm_temp', 'movavg6', 'persistence', 'persistence_ng', 'ridge', 'seasonal']
+timing: extract 264s, fit 1785s, score 3173s, total 5229s

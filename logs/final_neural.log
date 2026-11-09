@@ -1,0 +1,144 @@
+start Thu Nov  5 07:27:44 EST 2026
+cubes planned: train 160, val 10, test 64; cache 68.8 MB per cube -> 16.1 GB on disk (memory-mapped); one sample 1.77 MB; train samples <= 24000
+  train: 160 cubes cached, 0 missing []
+  val: 10 cubes cached, 0 missing []
+  test: 64 cubes cached, 0 missing []
+cache ready in 54 s
+GPU free 11.0 GB of 12.0 GB
+train samples 23751 / 24000 (non-empty), val samples 1497
+=== convlstm_s340
+  [convlstm_s340] ep 1/12 train 0.01138 val 0.00716 lr 9.97e-04 (1609+39 s, 27.5 min)
+  [convlstm_s340] ep 2/12 train 0.00766 val 0.00676 lr 9.63e-04 (1282+33 s, 49.4 min)
+  [convlstm_s340] ep 3/12 train 0.00717 val 0.00673 lr 8.95e-04 (1088+23 s, 67.9 min)
+  [convlstm_s340] ep 4/12 train 0.00687 val 0.00686 lr 7.96e-04 (943+22 s, 84.0 min)
+  [convlstm_s340] ep 5/12 train 0.00668 val 0.00646 lr 6.76e-04 (925+22 s, 99.8 min)
+  [convlstm_s340] ep 6/12 train 0.00649 val 0.00613 lr 5.42e-04 (924+22 s, 115.5 min)
+  [convlstm_s340] ep 7/12 train 0.00629 val 0.00650 lr 4.05e-04 (924+22 s, 131.3 min)
+  [convlstm_s340] ep 8/12 train 0.00615 val 0.00642 lr 2.75e-04 (924+22 s, 147.1 min)
+  [convlstm_s340] ep 9/12 train 0.00597 val 0.00614 lr 1.62e-04 (924+22 s, 162.8 min)
+  [convlstm_s340] ep 10/12 train 0.00586 val 0.00627 lr 7.50e-05 (924+22 s, 178.6 min)
+  [convlstm_s340] ep 11/12 train 0.00579 val 0.00625 lr 1.98e-05 (924+22 s, 194.3 min)
+  [convlstm_s340] ep 12/12 train 0.00575 val 0.00625 lr 1.00e-06 (924+22 s, 210.1 min)
+  [convlstm_s340] test {'pixels': 50144593, 'mae': 0.025658180010623144, 'pinball': 0.008244855615758901, 'cov80': 0.749122981215542, 'below_p10': 0.15613071183965938, 'persistence_mae': 0.052491404638756047, 'persistence_pinball': 0.026245702319378023} | 210.1 min train, peak GPU 3.62 GB, 0.76 M params, preds 435.5 MB
+=== earthformer_s340
+C:\Users\harsh\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\functional.py:504: UserWarning: torch.meshgrid: in an upcoming release, it will be required to pass the indexing argument. (Triggered internally at C:\actions-runner\_work\pytorch\pytorch\aten\src\ATen\native\TensorShape.cpp:4223.)
+  return _VF.meshgrid(tensors, **kwargs)  # type: ignore[attr-defined]
+  [earthformer_s340] ep 1/12 train 0.01508 val 0.00757 lr 8.34e-04 (1259+29 s, 21.5 min)
+  [earthformer_s340] ep 2/12 train 0.00877 val 0.00703 lr 9.87e-04 (1173+23 s, 41.4 min)
+  [earthformer_s340] ep 3/12 train 0.01171 val 0.01032 lr 9.33e-04 (1166+23 s, 61.2 min)
+  [earthformer_s340] ep 4/12 train 0.01234 val 0.01006 lr 8.43e-04 (1167+23 s, 81.1 min)
+  [earthformer_s340] ep 5/12 train 0.01217 val 0.01014 lr 7.25e-04 (1167+23 s, 100.9 min)
+  [earthformer_s340] ep 6/12 train 0.01213 val 0.01042 lr 5.87e-04 (1167+23 s, 120.8 min)
+  [earthformer_s340] ep 7/12 train 0.01232 val 0.01051 lr 4.42e-04 (1167+23 s, 140.6 min)
+  [earthformer_s340] ep 8/12 train 0.01224 val 0.01006 lr 3.03e-04 (1166+23 s, 160.4 min)
+  [earthformer_s340] test {'pixels': 50144593, 'mae': 0.029312327893153547, 'pinball': 0.009589250128395555, 'cov80': 0.8249213230228033, 'below_p10': 0.1069523288383256, 'persistence_mae': 0.052491404638756047, 'persistence_pinball': 0.026245702319378023} | 160.4 min train, peak GPU 4.26 GB, 8.65 M params, preds 450.8 MB
+=== convlstm_s341
+  [convlstm_s341] ep 1/12 train 0.01154 val 0.00741 lr 9.97e-04 (935+22 s, 15.9 min)
+neural done rc=1 Thu Nov  5 14:06:24 EST 2026
+restart Thu Nov  5 14:06:41 EST 2026 (earthformer lr 2.5e-4, warmup 0.2)
+cubes planned: train 160, val 10, test 64; cache 68.8 MB per cube -> 16.1 GB on disk (memory-mapped); one sample 1.77 MB; train samples <= 24000
+  train: 160 cubes cached, 0 missing []
+  val: 10 cubes cached, 0 missing []
+  test: 64 cubes cached, 0 missing []
+cache ready in 0 s
+GPU free 11.0 GB of 12.0 GB
+train samples 23751 / 24000 (non-empty), val samples 1497
+skip convlstm_s340 (done)
+=== earthformer_s340
+C:\Users\harsh\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\functional.py:504: UserWarning: torch.meshgrid: in an upcoming release, it will be required to pass the indexing argument. (Triggered internally at C:\actions-runner\_work\pytorch\pytorch\aten\src\ATen\native\TensorShape.cpp:4223.)
+  return _VF.meshgrid(tensors, **kwargs)  # type: ignore[attr-defined]
+  [earthformer_s340] ep 1/12 train 0.02361 val 0.01146 lr 1.04e-04 (1225+28 s, 20.9 min)
+  [earthformer_s340] ep 2/12 train 0.00966 val 0.00736 lr 2.08e-04 (1187+23 s, 41.0 min)
+  [earthformer_s340] ep 3/12 train 0.00833 val 0.00681 lr 2.48e-04 (1187+23 s, 61.2 min)
+  [earthformer_s340] ep 4/12 train 0.00804 val 0.00691 lr 2.33e-04 (1187+23 s, 81.4 min)
+  [earthformer_s340] ep 5/12 train 0.00763 val 0.00662 lr 2.07e-04 (1188+23 s, 101.6 min)
+  [earthformer_s340] ep 6/12 train 0.00740 val 0.00643 lr 1.73e-04 (1187+23 s, 121.7 min)
+  [earthformer_s340] ep 7/12 train 0.00711 val 0.00668 lr 1.33e-04 (1188+23 s, 141.9 min)
+  [earthformer_s340] ep 8/12 train 0.00692 val 0.00635 lr 9.28e-05 (1213+23 s, 162.5 min)
+  [earthformer_s340] ep 9/12 train 0.00668 val 0.00647 lr 5.57e-05 (1255+23 s, 183.8 min)
+  [earthformer_s340] ep 10/12 train 0.00651 val 0.00641 lr 2.61e-05 (1461+23 s, 208.6 min)
+  [earthformer_s340] ep 11/12 train 0.00639 val 0.00644 lr 6.88e-06 (1204+33 s, 229.2 min)
+  [earthformer_s340] ep 12/12 train 0.00632 val 0.00645 lr 2.50e-07 (1843+33 s, 260.5 min)
+  [earthformer_s340] test {'pixels': 50144593, 'mae': 0.026004698948249284, 'pinball': 0.00846076638142444, 'cov80': 0.7809087213052063, 'below_p10': 0.1227923018539606, 'persistence_mae': 0.052491404638756047, 'persistence_pinball': 0.026245702319378023} | 260.5 min train, peak GPU 4.26 GB, 8.65 M params, preds 452.2 MB
+=== convlstm_s341
+  [convlstm_s341] resumed after epoch 0
+  [convlstm_s341] ep 2/12 train 0.00759 val 0.00672 lr 9.63e-04 (1421+33 s, 40.2 min)
+  [convlstm_s341] ep 3/12 train 0.00721 val 0.00634 lr 8.95e-04 (1072+25 s, 58.5 min)
+  [convlstm_s341] ep 4/12 train 0.00697 val 0.00724 lr 7.96e-04 (1046+23 s, 76.3 min)
+  [convlstm_s341] ep 5/12 train 0.00675 val 0.00657 lr 6.76e-04 (967+23 s, 92.8 min)
+  [convlstm_s341] ep 6/12 train 0.00656 val 0.00619 lr 5.42e-04 (968+23 s, 109.3 min)
+  [convlstm_s341] ep 7/12 train 0.00633 val 0.00620 lr 4.05e-04 (967+23 s, 125.8 min)
+  [convlstm_s341] ep 8/12 train 0.00616 val 0.00645 lr 2.75e-04 (967+23 s, 142.3 min)
+  [convlstm_s341] ep 9/12 train 0.00604 val 0.00636 lr 1.62e-04 (967+23 s, 158.8 min)
+  [convlstm_s341] ep 10/12 train 0.00595 val 0.00621 lr 7.50e-05 (967+23 s, 175.3 min)
+  [convlstm_s341] ep 11/12 train 0.00587 val 0.00628 lr 1.98e-05 (967+23 s, 191.8 min)
+  [convlstm_s341] ep 12/12 train 0.00582 val 0.00626 lr 1.00e-06 (967+23 s, 208.3 min)
+  [convlstm_s341] test {'pixels': 50144593, 'mae': 0.02485649216206979, 'pinball': 0.008012860054514083, 'cov80': 0.7531725504283183, 'below_p10': 0.13913039437771485, 'persistence_mae': 0.052491404638756047, 'persistence_pinball': 0.026245702319378023} | 208.3 min train, peak GPU 3.64 GB, 0.76 M params, preds 428.7 MB
+=== earthformer_s341
+  [earthformer_s341] ep 1/12 train 0.02496 val 0.01053 lr 1.04e-04 (1785+55 s, 30.7 min)
+  [earthformer_s341] ep 2/12 train 0.00948 val 0.00860 lr 2.08e-04 (1611+25 s, 57.9 min)
+  [earthformer_s341] ep 3/12 train 0.00854 val 0.00734 lr 2.48e-04 (1623+45 s, 85.7 min)
+  [earthformer_s341] ep 4/12 train 0.00818 val 0.00675 lr 2.33e-04 (2010+38 s, 119.9 min)
+  [earthformer_s341] ep 5/12 train 0.00785 val 0.00697 lr 2.07e-04 (1509+33 s, 145.6 min)
+  [earthformer_s341] ep 6/12 train 0.00750 val 0.00708 lr 1.73e-04 (1410+24 s, 169.5 min)
+  [earthformer_s341] ep 7/12 train 0.00723 val 0.00657 lr 1.33e-04 (1358+30 s, 192.7 min)
+  [earthformer_s341] ep 8/12 train 0.00700 val 0.00648 lr 9.28e-05 (1554+33 s, 219.1 min)
+  [earthformer_s341] ep 9/12 train 0.00676 val 0.00687 lr 5.57e-05 (1396+26 s, 242.8 min)
+  [earthformer_s341] ep 10/12 train 0.00659 val 0.00651 lr 2.61e-05 (1555+34 s, 269.3 min)
+  [earthformer_s341] ep 11/12 train 0.00644 val 0.00661 lr 6.88e-06 (1743+38 s, 299.0 min)
+  [earthformer_s341] ep 12/12 train 0.00638 val 0.00657 lr 2.50e-07 (1770+49 s, 329.3 min)
+Traceback (most recent call last):
+  File "C:\Users\harsh\Desktop\fall 26\ds 340w\delta hw\pipelines\final_neural.py", line 772, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\harsh\Desktop\fall 26\ds 340w\delta hw\pipelines\final_neural.py", line 739, in main
+    np.savez_compressed(pp + ".tmp.npz", **preds); os.replace(pp + ".tmp.npz", pp)
+                                                   ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+PermissionError: [WinError 32] The process cannot access the file because it is being used by another process: 'C:\\Users\\harsh\\Desktop\\fall 26\\ds 340w\\delta hw\\results_v2\\final\\neural_preds\\earthformer_s341.npz.tmp.npz' -> 'C:\\Users\\harsh\\Desktop\\fall 26\\ds 340w\\delta hw\\results_v2\\final\\neural_preds\\earthformer_s341.npz'
+neural done rc=1 Fri Nov  6 03:31:25 EST 2026
+restart2 Fri Nov  6 03:32:15 EST 2026 (after WinError 32 on earthformer_s341 preds; replace_retry added)
+cubes planned: train 160, val 10, test 64; cache 68.8 MB per cube -> 16.1 GB on disk (memory-mapped); one sample 1.77 MB; train samples <= 24000
+  train: 160 cubes cached, 0 missing []
+  val: 10 cubes cached, 0 missing []
+  test: 64 cubes cached, 0 missing []
+cache ready in 0 s
+GPU free 11.0 GB of 12.0 GB
+train samples 23751 / 24000 (non-empty), val samples 1497
+skip convlstm_s340 (done)
+skip earthformer_s340 (done)
+skip convlstm_s341 (done)
+=== earthformer_s341
+C:\Users\harsh\AppData\Local\Programs\Python\Python313\Lib\site-packages\torch\functional.py:504: UserWarning: torch.meshgrid: in an upcoming release, it will be required to pass the indexing argument. (Triggered internally at C:\actions-runner\_work\pytorch\pytorch\aten\src\ATen\native\TensorShape.cpp:4223.)
+  return _VF.meshgrid(tensors, **kwargs)  # type: ignore[attr-defined]
+  [earthformer_s341] resumed after epoch 11
+  [earthformer_s341] test {'pixels': 50144593, 'mae': 0.02637758985068134, 'pinball': 0.008522206992553256, 'cov80': 0.7504035779091875, 'below_p10': 0.13713520418841568, 'persistence_mae': 0.052491404638756047, 'persistence_pinball': 0.026245702319378023} | 329.3 min train, peak GPU 0.16 GB, 8.65 M params, preds 446.1 MB
+=== convlstm_s342
+  [convlstm_s342] ep 1/12 train 0.01127 val 0.00863 lr 9.97e-04 (1133+28 s, 19.4 min)
+  [convlstm_s342] ep 2/12 train 0.00766 val 0.00769 lr 9.63e-04 (1326+32 s, 42.0 min)
+  [convlstm_s342] ep 3/12 train 0.00722 val 0.00712 lr 8.95e-04 (1339+27 s, 64.7 min)
+  [convlstm_s342] ep 4/12 train 0.00689 val 0.00676 lr 7.96e-04 (1347+27 s, 87.6 min)
+  [convlstm_s342] ep 5/12 train 0.00673 val 0.00641 lr 6.76e-04 (1568+41 s, 114.5 min)
+  [convlstm_s342] ep 6/12 train 0.00653 val 0.00640 lr 5.42e-04 (1260+26 s, 135.9 min)
+  [convlstm_s342] ep 7/12 train 0.00635 val 0.00622 lr 4.05e-04 (1168+26 s, 155.8 min)
+  [convlstm_s342] ep 8/12 train 0.00614 val 0.00638 lr 2.75e-04 (1423+27 s, 180.0 min)
+  [convlstm_s342] ep 9/12 train 0.00600 val 0.00622 lr 1.62e-04 (1501+42 s, 205.7 min)
+  [convlstm_s342] ep 10/12 train 0.00589 val 0.00627 lr 7.50e-05 (1436+29 s, 230.1 min)
+  [convlstm_s342] ep 11/12 train 0.00581 val 0.00629 lr 1.98e-05 (1313+22 s, 252.4 min)
+  [convlstm_s342] ep 12/12 train 0.00577 val 0.00626 lr 1.00e-06 (1255+22 s, 273.6 min)
+  [convlstm_s342] test {'pixels': 50144593, 'mae': 0.02503682184011628, 'pinball': 0.008133944480022344, 'cov80': 0.7477331803251449, 'below_p10': 0.15757142549746092, 'persistence_mae': 0.052491404638756047, 'persistence_pinball': 0.026245702319378023} | 273.6 min train, peak GPU 3.63 GB, 0.76 M params, preds 435.6 MB
+=== earthformer_s342
+  [earthformer_s342] ep 1/12 train 0.01868 val 0.00907 lr 1.04e-04 (1589+30 s, 27.0 min)
+  [earthformer_s342] ep 2/12 train 0.00896 val 0.00715 lr 2.08e-04 (1395+23 s, 50.6 min)
+  [earthformer_s342] ep 3/12 train 0.00834 val 0.00712 lr 2.48e-04 (1182+23 s, 70.7 min)
+  [earthformer_s342] ep 4/12 train 0.00803 val 0.00689 lr 2.33e-04 (1192+37 s, 91.2 min)
+  [earthformer_s342] ep 5/12 train 0.00767 val 0.00654 lr 2.07e-04 (1298+23 s, 113.2 min)
+  [earthformer_s342] ep 6/12 train 0.00741 val 0.00651 lr 1.73e-04 (1181+23 s, 133.3 min)
+  [earthformer_s342] ep 7/12 train 0.00714 val 0.00649 lr 1.33e-04 (1281+23 s, 155.0 min)
+  [earthformer_s342] ep 8/12 train 0.00690 val 0.00673 lr 9.28e-05 (1254+23 s, 176.3 min)
+  [earthformer_s342] ep 9/12 train 0.00668 val 0.00648 lr 5.57e-05 (1180+23 s, 196.4 min)
+  [earthformer_s342] ep 10/12 train 0.00651 val 0.00646 lr 2.61e-05 (1400+32 s, 220.2 min)
+  [earthformer_s342] ep 11/12 train 0.00639 val 0.00652 lr 6.88e-06 (1678+45 s, 249.0 min)
+  [earthformer_s342] ep 12/12 train 0.00632 val 0.00651 lr 2.50e-07 (2229+34 s, 286.7 min)
+  [earthformer_s342] test {'pixels': 50144593, 'mae': 0.025774972800175357, 'pinball': 0.008385358114376955, 'cov80': 0.7415137460583238, 'below_p10': 0.12628641736109017, 'persistence_mae': 0.052491404638756047, 'persistence_pinball': 0.026245702319378023} | 286.7 min train, peak GPU 4.09 GB, 8.65 M params, preds 438.7 MB
+wrote C:\Users\harsh\Desktop\fall 26\ds 340w\delta hw\results_v2\final\neural_rows.csv
+neural done rc=0 Fri Nov  6 13:12:26 EST 2026

@@ -1,0 +1,338 @@
+\documentclass[journal]{IEEEtran}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx,booktabs,array,multirow}
+\usepackage{microtype}
+\usepackage{xurl}
+\usepackage[hidelinks]{hyperref}
+\graphicspath{{figures/}}
+\hyphenation{Earth-former crop-land Vid-arbha Mara-thwada Sen-ti-nel Conv-LSTM}
+\input{final_numbers.tex}
+\input{final_numbers_extra.tex}
+\input{final_numbers_report.tex}
+\newcommand{\ci}[2]{[$#1$, $#2$]}
+\begin{document}
+\raggedbottom
+\title{Forecasting a Crop-Residue Index (NDTI) on Post-Harvest Cropland Across Maharashtra for Biogas Feedstock Planning}
+\author{Harsh~Rathi and Tianhao~Wang\\
+\small DS 340W, Group 9, The Pennsylvania State University}
+\maketitle
+
+\begin{abstract}
+Compressed biogas (CBG) plants that run on crop residue need to know when fields will be harvested and left with exposed residue. We forecast the Normalized Difference Tillage Index (NDTI), a shortwave-infrared proxy for residue cover, one to three dekads (ten-day periods) ahead on post-harvest cropland across Maharashtra, India, from 20\,m Sentinel-2 composites. Models were trained on 2018--2022, selected on 2023 and tested on the 2024 and 2025 monsoon-season (kharif) harvests in \finNTestBlocks{} grid blocks from held-out groups of neighbouring grid cells. The target is defined only where a cropland pixel is clear and non-green (NDVI below 0.30) at the target dekad. Scored on the same \finNPixelForecasts{} pixel forecasts, a quantile gradient-boosting model (GBM) reaches a mean absolute error (MAE) of \finGbmMAE, against \finPersMAE{} for persistence and \finClimMAE{} for climatology, and is better than both in every test block. Because \finyGreenGainShare\% of its gain over persistence comes from pixels whose last clear input was still green, climatology is the fairer reference; against it the pooled MAE reduction is \finxGbmRelMAEVsClim\%. ConvLSTM is statistically indistinguishable from the GBM (block-level Wilcoxon $p=\finConvLSTMVsGbmP$), and Earthformer is significantly worse than both. Weather inputs did not improve the GBM.
+\end{abstract}
+
+\begin{IEEEkeywords}
+NDTI, crop residue, Sentinel-2, spatiotemporal forecasting, Earthformer, ConvLSTM, gradient boosting, spatial blocking, compressed biogas.
+\end{IEEEkeywords}
+
+\section{Introduction}
+\IEEEPARstart{I}{ndia's} Sustainable Alternative Towards Affordable Transportation (SATAT) programme set a target of 5,000 compressed biogas (CBG) plants producing 15 million tonnes of gas a year, with agricultural residue among its feedstocks~\cite{satat}. India's surplus crop residue has been estimated at about 234 million tonnes a year~\cite{hiloidhari}, and much of what is not collected is burned~\cite{jain,jethva}. In Maharashtra soybean is harvested from late September, kharif (monsoon-season) rice and sugarcane from October, and cotton and pigeon pea from November into February~\cite{desharvest}. A plant must collect residue between harvest and the next land operation, such as rabi (winter-season) sowing. A plant's procurement team must decide where in its catchment to send scouting and baling crews; crews sent too early find standing crops, and crews sent too late find fields burned, tilled or resown. The decision needs an estimate, one to three dekads (ten-day periods, about 10 to 30 days) ahead, of where fields will be bare.
+
+The Normalized Difference Tillage Index (NDTI), computed from the two shortwave-infrared (SWIR) bands, was introduced to separate low from high residue cover~\cite{vandeventer}, but it also responds to soil moisture and green vegetation~\cite{quemada,zheng}. We therefore forecast the index itself, score it only on cropland that is not green, and make no claims about residue tonnage, since converting NDTI to mass would require field calibration plots.
+
+We ask whether learned spatiotemporal models, ConvLSTM~\cite{convlstm} and Earthformer~\cite{earthformer}, forecast NDTI on post-harvest cropland more accurately than persistence, climatology and a gradient-boosting model on per-pixel features when both the test region and the test season are held out.
+
+The study makes the following contributions. We define a statewide benchmark for the task on a 0.25$^\circ$ grid of Maharashtra, split by super-block (a group of neighbouring cells) and by season before any target was examined, with inputs built from open Sentinel-2 data and every model scored on exactly the same pixel forecasts. We score the index only where the field is clear and non-green at the target dekad, and we measure how much of each model's gain over persistence comes from forecasts issued while the field was still green; this analysis identifies climatology as the fairer reference. We compare five training-free baselines, a ridge model, a quantile gradient-boosting model (GBM), ConvLSTM and Earthformer (official implementation~\cite{earthformercode}) with block-level paired tests and a super-block bootstrap, and we test five weather variants of the GBM against the base model.
+
+On the test set the GBM reaches an MAE of \finGbmMAE, against \finClimMAE{} for climatology (\finxGbmRelMAEVsClim\% lower), and it is better than climatology in every test block. ConvLSTM is statistically tied with the GBM (block-level Wilcoxon $p=\finConvLSTMVsGbmP$), Earthformer is significantly worse than both, and none of the weather inputs improved the GBM. Sections~II to VII cover related work, data, methods, experimental design, results and discussion.
+
+\section{Related Work}
+\subsection{Remote sensing of crop residue}
+Residue indices exploit a cellulose and lignin absorption feature near 2.1\,$\mu$m. NDTI was proposed for Landsat Thematic Mapper bands~\cite{vandeventer}; narrow-band indices track residue cover more closely but need WorldView-3 or hyperspectral SWIR bands~\cite{hively}. Green vegetation and moisture are the main confounders~\cite{zheng,quemada}, and the usual remedy, which we follow, is to mask green pixels. Sentinel-2 provides both SWIR bands at 20\,m every five days or so~\cite{sentinel}, with a scene classification for cloud masking~\cite{sen2cor}. The residue studies we found map cover at the date of observation; none forecasts a residue index.
+
+\subsection{Harvest timing, residue supply and vegetation forecasting}
+Phenology detection is the closest remote-sensing task to predicting when a field goes bare. TIMESAT extracts the start and end of each season from vegetation-index time series~\cite{timesat}, and Sakamoto et al.\ estimated rice planting and harvest dates from MODIS data~\cite{sakamoto}; both date events after they are observed. Residue supply for bioenergy in India is usually estimated from crop statistics~\cite{hiloidhari}, and Jethva et al.\ used vegetation indices to anticipate the intensity of the post-harvest fire season in northern India~\cite{jethva}. GreenEarthNet forecasts Sentinel-2 greenness per pixel~\cite{greenearthnet}. In our task the target is a residue index, forecast before harvest is observed and scored only once the field is non-green.
+
+\subsection{Forecasting Earth-surface sequences}
+ConvLSTM introduced convolutional recurrence for gridded sequences~\cite{convlstm}; later video-prediction models include PredRNN~\cite{predrnn}, SimVP~\cite{simvp} and the temporal attention unit (TAU)~\cite{tau}. EarthNet2021 found persistence-type baselines hard to beat at short leads when forecasting Sentinel-2 imagery~\cite{earthnet}. Earthformer replaces recurrence with cuboid attention over space-time blocks, and its authors reported the best scores among the compared models on precipitation nowcasting with the SEVIR radar dataset~\cite{sevir} and on EarthNet2021~\cite{earthformer}. Foundation models such as Prithvi are pretrained on large satellite archives~\cite{prithvi}.
+
+\subsection{Baselines, quantile forecasts and validation}
+Forecast evaluations usually compare a model with persistence and climatology, for example through the mean absolute scaled error (MASE)~\cite{hyndman}. Gradient-boosted trees~\cite{lightgbm} often match deep networks on tabular data~\cite{grinsztajn}. Quantile forecasts are trained and scored with the pinball loss~\cite{quantile}. Spatially autocorrelated data inflate scores from random splits~\cite{roberts}, so we hold out contiguous super-blocks as well as whole seasons and test at the block level.
+
+\section{Study Area and Data}
+\subsection{Statewide grid, split and block selection}
+We cover Maharashtra with 0.25$^\circ$ cells on a lattice starting at 72.50$^\circ$E, 15.50$^\circ$N, keeping each cell with at least 10\% of its area inside the state boundary (Census 2011 district polygons~\cite{indiamaps}). This gives 479 cells (blocks), each assigned the division (Konkan, Pune, Nashik, Marathwada or Vidarbha) of the nearest district. Neighbouring blocks form 140 super-blocks of 2$\times$2 cells, which were shuffled with seed 340 and assigned 20\% to test, 10\% to validation and the rest to training (98, 49 and 332 blocks) before any target was examined.
+
+Each block is represented by one 12.8\,km\,$\times$\,12.8\,km window (640$\times$640 pixels at 20\,m) at the centre of its cell, in its native Universal Transverse Mercator (UTM) zone. The window covers under a quarter of the cell, so block scores describe a sample of the cell.
+
+Building data cubes (dekadal image stacks) for all 479 blocks was not feasible on one workstation, so cube-building time set the sample sizes. Blocks whose window ESA WorldCover~\cite{worldcover} marks as at least 30\% cropland were drawn per division in a seeded random order, in proportion to the eligible counts and with at least two per division where available. The study uses \finNTestBlocks{} test blocks in \finNSuperblocks{} super-blocks (Vidarbha \finyNBlocksVidarbha, Pune \finyNBlocksPune, Marathwada \finyNBlocksMarathwada, Nashik \finyNBlocksNashik{} and Konkan \finyNBlocksKonkan), \finxNTrainBlocks{} training blocks and \finxNValBlocks{} validation blocks (Fig.~\ref{fig:area}).
+
+\begin{figure}[t]
+\centering\includegraphics[width=\columnwidth]{fig_final_study_area.pdf}
+\caption{Study grid over Maharashtra. Fill colour shows the super-block split and outlines mark the blocks used in the final experiment.}
+\label{fig:area}
+\end{figure}
+
+\subsection{Sentinel-2 composites}
+Sentinel-2 Level-2A scenes come from the Earth Search catalogue~\cite{earthsearch}. We keep scenes with cloud cover below 70\% and mask pixels that the Scene Classification Layer flags as no data, defective, cloud shadow, cloud, cirrus or snow. For each block and season we compute 14 dekadal composites of the per-pixel median NDTI, NDVI and four input bands over clear observations. Test blocks have cubes for 2018--2025 and training blocks for 2018--2022, and validation blocks are used for 2023 only.
+
+\subsection{Land cover and weather}
+Cropland is WorldCover 2021 class 40~\cite{worldcover}, resampled onto each cube's grid. Daily precipitation, 2\,m mean temperature and 0--7\,cm soil moisture at each block centre come from the Open-Meteo historical archive~\cite{openmeteo}, which serves ERA5-family reanalysis~\cite{era5}. Daily CHIRPS rainfall at 0.05$^\circ$~\cite{chirps}, obtained through SERVIR ClimateSERV~\cite{climateserv}, is averaged over each block's cell. Both series were complete for every block and day.
+
+\subsection{Seasons, issue times and leads}
+Season $Y$ runs from 11 September of year $Y$ to 31 January of year $Y{+}1$ (14 dekads). A forecast is issued at the end of dekad $t$, using the six composites up to and including $t$; issue dekads are those starting 1 November through 21 December, six per season. Each forecast predicts dekads $t{+}1$, $t{+}2$ and $t{+}3$ (leads $L=1,2,3$).
+
+\section{Methods}
+\subsection{Target and scoring mask}
+For a pixel with SWIR reflectances $\rho_{11}$ and $\rho_{12}$ (Sentinel-2 bands B11 and B12) and red and narrow near-infrared reflectances $\rho_{4}$ and $\rho_{8A}$,
+\begin{equation}
+\mathrm{NDTI}=\frac{\rho_{11}-\rho_{12}}{\rho_{11}+\rho_{12}},\qquad
+\mathrm{NDVI}=\frac{\rho_{8A}-\rho_{4}}{\rho_{8A}+\rho_{4}}.
+\end{equation}
+The target $y_{i,t+L}$ is the composite NDTI of pixel $i$ at dekad $t{+}L$. It is defined only if the pixel is WorldCover cropland, is clear at $t{+}L$, has $\mathrm{NDVI}_{i,t+L}<0.30$, and has at least one clear NDTI value in the six input dekads. The NDVI cutoff removes standing crops and rabi green-up, whose canopy water raises NDTI independently of residue~\cite{zheng}.
+
+The forecast is therefore conditional on the pixel being clear and non-green at the target dekad. The condition was added to our protocol before any model of this study was trained (logged as a deviation on 14 October 2026, after NDTI was seen to follow crop greenness); it cannot be observed at issue time and also applies to training. It favours any model that can anticipate the harvest and penalises persistence (Section~\ref{sec:err}).
+
+\subsection{Forecast units}
+A forecast unit is one (block, season, issue, lead) combination. Of \finyNUnitsPossible{} possible test units, \finNUnitsCore{} contain a scored pixel (the \finxNUnitsEmpty{} empty units all target 1--10 December 2024, when no cropland pixel in those blocks passed the scoring mask). They hold \finNPixelForecasts{} pixel forecasts, and the scoring code asserts that every model and seed forecasts exactly the same pixels in every unit.
+
+\subsection{Baselines}
+\label{sec:baselines}
+\emph{Persistence} carries forward the last clear input NDTI. \emph{Non-green persistence} carries forward the last clear input with NDVI below 0.30, falling back to persistence when there is none (\finxFallbackPersNG\% of forecasts). The \emph{six-dekad mean} averages the clear inputs. \emph{Seasonal persistence} uses the masked target at the same pixel and dekad in the previous season, falling back to persistence when it is missing (\finxFallbackSeas\% of forecasts; \finxFallbackSeasTwentyFour\% in 2024 and \finxFallbackSeasTwentyFive\% in 2025). \emph{Climatology} gives the per-pixel 10th, 50th and 90th percentiles (P10, P50, P90) of the masked target at the same dekad over the block's own 2018--2022 seasons, requiring at least \finxClimMinYears{} values; otherwise it uses block-wide, and as a last resort pooled training, quantiles for that dekad (together \finxFallbackClim\% of forecasts).
+
+Climatology and seasonal persistence use only seasons before the test seasons, so they are temporally clean, but their access to each test location's own history gives them an advantage over the learned models. The first four baselines, like ridge, are point forecasts (P10\,=\,P50\,=\,P90).
+
+\subsection{Ridge and the GBM}
+Both models use the same per-pixel features, computed from dekads up to the issue dekad: the last clear NDTI and its age in dekads, the mean clear NDTI in the window, the change between the last two clear NDTI values, the last clear NDVI, the season-to-date maximum NDVI and the dekads since it, the issue dekad and the number of clear input dekads. The NDVI maximum and its timing reach back beyond the neural models' six-dekad window. Training rows are up to \finxPerUnitPx{} random scored pixels per block-season, issue and lead (\finNTrainRows{} training and \finNValRows{} validation rows). We call ridge and the GBM the feature-based models, and ConvLSTM and Earthformer the neural models. Ridge median-fills missing values, adds missing-value flags and a one-hot lead, and standardises the features; its penalty, chosen by validation MAE among values from 0.01 to 1000 in factors of ten, is the smallest of them (\finRidgeAlpha).
+
+The GBM is scikit-learn's histogram gradient-boosting regressor~\cite{sklearn} with the quantile loss, one model per quantile level $\tau\in\{0.1,0.5,0.9\}$, with lead as a feature, \finxGbmLeaves{} leaves and at least \finxGbmMinLeaf{} samples per leaf. The learning rate was chosen from $\{$\finxGbmLRGrid$\}$, and the number of iterations, capped at \finxGbmCap, was set to the iteration at which the staged validation pinball loss was lowest. The selected learning rate is \finGbmLrFifty{} for all three quantiles, the lower edge of the grid, as was ridge's penalty.
+
+\subsection{Weather variants}
+We also trained GBM variants with block-level weather: \emph{+rain} adds ERA5 precipitation summed over the input window and over the issue dekad, \emph{+soil} and \emph{+temp} the issue-dekad mean soil moisture and temperature, \emph{+CHIRPS} CHIRPS sums over the windows of \emph{+rain}, and \emph{+all} all of them. Each variant re-selects only the iterations. Issue-dekad values from these retrospective products would not be available in real time.
+
+\subsection{Neural models}
+Each window is cut into \finxTilesPerWindow{} tiles of \finxPatch$\times$\finxPatch{} pixels; a sample is one tile at one issue time with a scored target (\finxNTrainSamples{} training and \finxNValSamples{} validation samples). For each input dekad the network receives NDTI, NDVI and four reflectances, forward-filled within the window, with a clear flag, the cropland mask and the dekad index. The head predicts P50 as the last forward-filled input NDTI plus a learned residual, and P10 and P90 as P50 minus and plus softplus offsets, so the quantiles cannot cross.
+
+The ConvLSTM~\cite{convlstm} has three stacked cells with 64 hidden channels and 3$\times$3 kernels at full tile resolution (\finConvLSTMSeedOneParams{} parameters). Earthformer uses the official CuboidTransformerModel~\cite{earthformercode} (commit \finxEFCommit) with the SEVIR configuration (\finEarthformerSeedOneParams{} parameters); the only change is the initial downsampling, $[1,2,2]$ instead of $[3,2,2]$, so that a 128-pixel tile gives the same 32$\times$32 latent grid as a SEVIR frame (one token per 80\,m).
+
+Both models minimise the masked pinball loss
+\begin{equation}
+\mathcal{L}=\frac{1}{3|M|}\sum_{i\in M}\sum_{\tau\in\{0.1,0.5,0.9\}}\max\left(\tau\,e_{i\tau},\,(\tau-1)\,e_{i\tau}\right),
+\label{eq:pin}
+\end{equation}
+where $e_{i\tau}=y_i-\hat y_{i\tau}$ and $M$ is the set of scored pixels, with AdamW~\cite{adamw}, batch size \finxConvLSTMBS, linear warm-up and cosine decay to one-thousandth of the peak rate, flips and rotations, and gradient clipping. Every run trained for the full \finxEpochBudget{} epochs and was tested at the checkpoint with the lowest validation pinball loss. ConvLSTM uses a peak learning rate of \finyConvLSTMLR, weight decay \finyConvLSTMWD{} and \finxConvLSTMWarmup\% warm-up, set by hand. Earthformer uses a peak learning rate of \finyEarthformerLR, weight decay \finyEarthformerWD{} and \finxEarthformerWarmup\% warm-up; the learning rate is the SEVIR configuration's $10^{-3}$ at batch 32, scaled linearly~\cite{goyal}. Neither family was tuned further. The six reported runs took \finxNeuralTrainHours{} GPU hours on one 12\,GB \finxGPU, excluding the discarded run, with peak memory of at most \finxConvLSTMPeakGpuMax\,GB for ConvLSTM and \finxEarthformerPeakGpuMax\,GB for Earthformer.\footnote{Earthformer seed 341's memory record covers only its re-scoring, so its training peak is unknown.} Table~\ref{tab:seed} lists the per-seed training details.
+
+\section{Experimental Design}
+\subsection{Splits and metrics}
+All fitted models are trained on 2018--2022 in the training blocks, selected on 2023 in the validation blocks and tested on 2024 and 2025 in the test blocks (\finxNTestBlockSeasons{} block-seasons), disjoint by super-block and by season. Hyper-parameters of the final runs were selected on validation data only.
+
+For P50 we report the mean absolute error (MAE), root-mean-square error (RMSE) and bias (P50 minus target); for the quantile models (climatology, the GBM and its variants, and the neural models) also the pinball loss \eqref{eq:pin}, the 80\% interval coverage and the share of targets below P10. A point forecast has pinball loss equal to half its MAE, so point models are compared on MAE. Pooled metrics are pixel-weighted. In place of the protocol's MASE we report the ratio of pooled MAE to that of persistence.
+
+\subsection{Statistical tests}
+Pixels within a block are correlated and units overlap in time, so inference uses block metrics, which weight blocks equally. Comparisons use the \finNTestBlocks{} paired block differences: the win count (blocks in which the model has the lower error), a two-sided Wilcoxon signed-rank test~\cite{wilcoxon}, and a 95\% percentile bootstrap interval~\cite{efron} for the mean difference that resamples the \finNSuperblocks{} test super-blocks (2,000 draws). Percentage differences are relative to the reference model's mean block metric, unlike pooled percentages, which weight blocks by pixel count. Per-lead tests are judged against a Bonferroni threshold of 0.05/3; we report unadjusted $p$-values and say where the adjustment changes a conclusion.
+
+\subsection{Seeds}
+Each neural model was trained with seeds 340, 341 and 342. The aggregate for an architecture is the mean of the three per-seed metrics; the seed forecasts were never averaged into an ensemble. ConvLSTM seed 341 was resumed after an interruption, and Earthformer seed 341 was re-scored from its best checkpoint after a crash; neither is bit-for-bit reproducible.
+
+\section{Results}
+\subsection{Baselines and the GBM}
+\label{sec:base}
+Table~\ref{tab:main} gives pooled scores, and Fig.~\ref{fig:res} shows MAE by lead and block-level differences. Persistence has a strong upward bias ($\finPersBias$), because many of its forecasts carry a pre-harvest NDTI value into a non-green target. The six-dekad mean averages over more of the green period and is worse than persistence in every block. Non-green persistence is indistinguishable from persistence (\finPersNGVsPersWins{} wins, $p=\finPersNGVsPersP$). Seasonal persistence beats persistence in \finSeasVsPersWins{} of \finNTestBlocks{} blocks (MAE \finSeasMAE) but loses to climatology in all but \finSeasVsClimWins{} blocks ($p$\,\finSeasVsClimP). Because \finxFallbackSeas\% of its forecasts fall back to persistence, it is not a strong reference in this setting.
+
+Climatology, the strongest training-free baseline, beats persistence in \finClimVsPersWins{} blocks and is nearly unbiased ($\finClimBias$), but its intervals are too narrow: only \finyClimCov{} of targets fall inside its 80\% interval and \finyClimBelow{} below its P10, as expected when per-pixel quantiles rest on only \finxClimMinYears{} to 5 seasons. Ridge (MAE \finRidgeMAE) beats persistence in all \finNTestBlocks{} blocks but not reliably climatology (\finRidgeVsClimWins{} wins, $p=\finRidgeVsClimP$).
+
+The GBM has the lowest MAE of the feature-based models (\finGbmMAE) and is better than persistence and climatology in all \finNTestBlocks{} blocks, with mean block MAE differences of $\finGbmVsPersDiff$ (95\% CI \ci{\finGbmVsPersLo}{\finGbmVsPersHi}, Wilcoxon $p$\,\finGbmVsPersP) and $\finGbmVsClimDiff$ (\ci{\finGbmVsClimLo}{\finGbmVsClimHi}, $p$\,\finGbmVsClimP). Its pooled MAE is \finxGbmRelMAEVsPers\% below persistence (mostly from forecasts whose last clear input was green; Section~\ref{sec:err}) and \finxGbmRelMAEVsClim\% below climatology. Its pinball loss is lower than climatology's in every block, and its intervals cover \finyGbmCov{} of targets, with \finyGbmBelow{} below P10.
+
+\begin{table*}[t]
+\caption{Pooled test scores on the same \finNPixelForecasts{} pixel forecasts (\finNTestBlocks{} blocks, 2024 and 2025 seasons; NDTI units). Bias is P50 minus target. Ratio is pooled MAE divided by persistence MAE. Wins are blocks (of \finNTestBlocks) in which the model has the lower block MAE. Neural rows are means of the three per-seed metrics (not an ensemble forecast). Fallback is the share of forecasts that use a fallback rule.}
+\label{tab:main}\centering\footnotesize\setlength{\tabcolsep}{5pt}
+\begin{tabular}{lrrrrrrrrrr}\toprule
+Model & MAE & RMSE & Bias & Pinball$^{a}$ & Cov.\ 80\% & Below P10 & Ratio & Fallback (\%) & Wins vs pers. & Wins vs clim.\\\midrule
+Persistence & \finPersMAE & \finPersRMSE & $\finPersBias$ & \finPersPin & -- & -- & \finPersRelMAE & -- & -- & \finPersVsClimWins\\
+Non-green persistence & \finPersNGMAE & \finPersNGRMSE & $\finPersNGBias$ & \finPersNGPin & -- & -- & \finPersNGRelMAE & \finxFallbackPersNG & \finPersNGVsPersWins & \finPersNGVsClimWins\\
+Six-dekad mean & \finMovAvgMAE & \finMovAvgRMSE & $\finMovAvgBias$ & \finMovAvgPin & -- & -- & \finMovAvgRelMAE & -- & \finMovAvgVsPersWins & \finMovAvgVsClimWins\\
+Seasonal persistence & \finSeasMAE & \finSeasRMSE & $\finSeasBias$ & \finSeasPin & -- & -- & \finSeasRelMAE & \finxFallbackSeas & \finSeasVsPersWins & \finSeasVsClimWins\\
+Climatology & \finClimMAE & \finClimRMSE & $\finClimBias$ & \finClimPin & \finyClimCov & \finyClimBelow & \finClimRelMAE & \finxFallbackClim & \finClimVsPersWins & --\\
+Ridge & \finRidgeMAE & \finRidgeRMSE & $\finRidgeBias$ & \finRidgePin & -- & -- & \finRidgeRelMAE & -- & \finRidgeVsPersWins & \finRidgeVsClimWins\\
+GBM & \finGbmMAE & \finGbmRMSE & $\finGbmBias$ & \finGbmPin & \finyGbmCov & \finyGbmBelow & \finGbmRelMAE & -- & \finGbmVsPersWins & \finGbmVsClimWins\\
+ConvLSTM & \finConvLSTMMAE & \finConvLSTMRMSE & $\finConvLSTMBias$ & \finConvLSTMPin & \finyConvLSTMCov & \finyConvLSTMBelow & \finConvLSTMRelMAE & -- & \finConvLSTMVsPersWins & \finConvLSTMVsClimWins\\
+Earthformer & \finEarthformerMAE & \finEarthformerRMSE & $\finEarthformerBias$ & \finEarthformerPin & \finyEarthformerCov & \finyEarthformerBelow & \finEarthformerRelMAE & -- & \finEarthformerVsPersWins & \finEarthformerVsClimWins\\\bottomrule
+\multicolumn{11}{l}{\scriptsize $^{a}$For point forecasts (rows without coverage) the pinball loss equals MAE/2 by construction; compare these rows on MAE and RMSE.}
+\end{tabular}
+\end{table*}
+
+\begin{figure*}[t]
+\centering\includegraphics[width=\textwidth]{fig_final_results.pdf}
+\caption{(a) Pooled test MAE by lead; the ConvLSTM line (thin, dashed, open markers) is drawn over the wide GBM line because the two nearly coincide. (b) Mean block MAE difference from persistence and (c) from the GBM, with 95\% super-block bootstrap intervals; numbers on the right are blocks (of \finNTestBlocks) in which the model has the lower MAE. Weather variants are labelled as in Table~\ref{tab:wx}. Neural models are means of the per-seed metrics.}
+\label{fig:res}
+\end{figure*}
+
+\subsection{Neural models against the GBM}
+Both neural models beat persistence in all \finNTestBlocks{} blocks and climatology in \finConvLSTMVsClimWins{} (ConvLSTM) and \finEarthformerVsClimWins{} (Earthformer) blocks. ConvLSTM and the GBM are statistically indistinguishable. On pooled pixels ConvLSTM is slightly lower, with an MAE of \finxConvLSTMMAEFive{} against \finxGbmMAEFive{} ($\finxPooledConvLSTMVsGbmMAERel$\%) and a pinball loss of \finxConvLSTMPinFive{} against \finxGbmPinFive{} ($\finxPooledConvLSTMVsGbmPinRel$\%). At the block level the mean difference has the opposite sign: ConvLSTM's mean block MAE is higher by $\finyConvLSTMVsGbmDiff$ (\ci{\finyConvLSTMVsGbmLo}{\finyConvLSTMVsGbmHi}, $p=\finConvLSTMVsGbmP$), although ConvLSTM has the lower MAE in \finConvLSTMVsGbmWins{} of \finNTestBlocks{} blocks; for the pinball loss $p=\finConvLSTMVsGbmPinP$. The views differ because pooled metrics weight blocks by pixel count.
+
+Table~\ref{tab:seed} gives the results of each seed. The seed-to-seed standard deviation of ConvLSTM's pooled pinball loss (\finConvLSTMPinSd) is several times the pooled gap, and the seeds differ in sign against the GBM. Seed 340 has a higher block MAE, with a bootstrap interval above zero (\ci{\finxConvLSTMSeedOneVsGbmLo}{\finxConvLSTMSeedOneVsGbmHi}) although its Wilcoxon test is not significant; seed 341 has a lower block MAE and seed 342 is level with the GBM. We therefore treat the two models as tied on accuracy.
+
+Earthformer is significantly worse than both. Its mean block MAE difference from the GBM is $\finyEarthformerVsGbmDiff$ (\ci{\finyEarthformerVsGbmLo}{\finyEarthformerVsGbmHi}, $p=\finEarthformerVsGbmP$), its pinball loss is also higher ($p$\,\finEarthformerVsGbmPinP), and against ConvLSTM it wins only \finEarthformerVsConvLSTMWins{} blocks ($p$\,\finEarthformerVsConvLSTMP). Each Earthformer seed is significantly worse than the GBM, and on validation data the best pinball loss of every ConvLSTM seed is lower than that of every Earthformer seed, so model selection and test give the same ranking. ConvLSTM's lower quantile is too high: \finyConvLSTMBelow{} of targets fall below its P10, and every seed is above the nominal 0.10. Earthformer's below-P10 share (\finyEarthformerBelow) is closer to the GBM's (\finyGbmBelow), but its coverage varies more across seeds than ConvLSTM's.
+
+\begin{table*}[t]
+\caption{Results and training details for each neural seed, with the GBM for reference (pooled test scores on the same pixel forecasts as Table~\ref{tab:main}). The $p$-value is the block-level Wilcoxon test against the GBM. Best epoch and validation pinball loss refer to the tested checkpoint; every run trained for \finxEpochBudget{} epochs.}
+\label{tab:seed}\centering\footnotesize\setlength{\tabcolsep}{4.4pt}
+\begin{tabular}{llrrrrrrrrrr}\toprule
+Model & Seed & MAE & RMSE & Bias & Cov.\ 80\% & Below P10 & $p$ vs GBM & Best epoch & Val.\ pinball & Train (min) & Peak GPU (GB)\\\midrule
+GBM & -- & \finxGbmMAEFive & \finGbmRMSE & $\finGbmBias$ & \finyGbmCov & \finyGbmBelow & -- & -- & -- & -- & --\\\midrule
+ConvLSTM & 340 & \finxConvLSTMSeedOneMAEFive & \finxConvLSTMSeedOneRMSE & $\finxConvLSTMSeedOneBias$ & \finxConvLSTMSeedOneCov & \finxConvLSTMSeedOneBelow & \finxConvLSTMSeedOneVsGbmP & \finConvLSTMSeedOneBestEpoch & \finxConvLSTMSeedOneBestVal & \finConvLSTMSeedOneTrainMin & \finxConvLSTMSeedOnePeakGpuTrain\\
+ & 341 & \finxConvLSTMSeedTwoMAEFive & \finxConvLSTMSeedTwoRMSE & $\finxConvLSTMSeedTwoBias$ & \finxConvLSTMSeedTwoCov & \finxConvLSTMSeedTwoBelow & \finxConvLSTMSeedTwoVsGbmP & \finConvLSTMSeedTwoBestEpoch & \finxConvLSTMSeedTwoBestVal & \finConvLSTMSeedTwoTrainMin & \finxConvLSTMSeedTwoPeakGpuTrain\\
+ & 342 & \finxConvLSTMSeedThreeMAEFive & \finxConvLSTMSeedThreeRMSE & $\finxConvLSTMSeedThreeBias$ & \finxConvLSTMSeedThreeCov & \finxConvLSTMSeedThreeBelow & \finxConvLSTMSeedThreeVsGbmP & \finConvLSTMSeedThreeBestEpoch & \finxConvLSTMSeedThreeBestVal & \finConvLSTMSeedThreeTrainMin & \finxConvLSTMSeedThreePeakGpuTrain\\\midrule
+Earthformer & 340 & \finxEarthformerSeedOneMAEFive & \finxEarthformerSeedOneRMSE & $\finxEarthformerSeedOneBias$ & \finxEarthformerSeedOneCov & \finxEarthformerSeedOneBelow & \finxEarthformerSeedOneVsGbmP & \finEarthformerSeedOneBestEpoch & \finxEarthformerSeedOneBestVal & \finEarthformerSeedOneTrainMin & \finxEarthformerSeedOnePeakGpuTrain\\
+ & 341 & \finxEarthformerSeedTwoMAEFive & \finxEarthformerSeedTwoRMSE & $\finxEarthformerSeedTwoBias$ & \finxEarthformerSeedTwoCov & \finxEarthformerSeedTwoBelow & \finxEarthformerSeedTwoVsGbmP & \finEarthformerSeedTwoBestEpoch & \finxEarthformerSeedTwoBestVal & \finEarthformerSeedTwoTrainMin$^{a}$ & \finxEarthformerSeedTwoPeakGpuTrain$^{a}$\\
+ & 342 & \finxEarthformerSeedThreeMAEFive & \finxEarthformerSeedThreeRMSE & $\finxEarthformerSeedThreeBias$ & \finxEarthformerSeedThreeCov & \finxEarthformerSeedThreeBelow & \finxEarthformerSeedThreeVsGbmP & \finEarthformerSeedThreeBestEpoch & \finxEarthformerSeedThreeBestVal & \finEarthformerSeedThreeTrainMin & \finxEarthformerSeedThreePeakGpuTrain\\\bottomrule
+\multicolumn{12}{l}{\scriptsize $^{a}$Re-scored from its best checkpoint after a file-lock crash; the time includes the original training, and the peak memory of training was not recorded.}
+\end{tabular}
+\end{table*}
+
+\subsection{Lead dependence, season and calibration}
+Persistence error grows quickly with lead, climatology changes little and the GBM error grows slowly (Table~\ref{tab:lead}). Pooled over leads the GBM beats persistence in every block, and at lead 1 in \finxLeadOneGbmVsPersWins{} of \finNTestBlocks; its advantage over climatology shrinks with lead but is significant at every lead.
+
+ConvLSTM and the GBM do not differ significantly at leads 2 and 3 ($p=\finxLeadTwoConvLSTMVsGbmP$ and \finxLeadThreeConvLSTMVsGbmP). At lead 1 the GBM is slightly ahead: ConvLSTM wins only \finxLeadOneConvLSTMVsGbmWins{} of \finNTestBlocks{} blocks, with an unadjusted $p$ of \finxLeadOneConvLSTMVsGbmP{}, which does not pass the Bonferroni threshold, and a bootstrap interval that includes zero (\ci{\finxLeadOneConvLSTMVsGbmLo}{\finxLeadOneConvLSTMVsGbmHi}). Earthformer is significantly worse than the GBM and than ConvLSTM at every lead, and all six of these $p$-values pass the adjusted threshold (largest \finxLeadOneEarthformerVsConvLSTMP).
+
+Coverage is lower at lead 3 than at lead 1 for every quantile model, descriptively more so for the neural models than for the GBM. Errors were higher in 2024 than in 2025 for persistence (\finPersMAEYrTwentyFour{} against \finPersMAEYrTwentyFive), the GBM (\finGbmMAEYrTwentyFour{} against \finGbmMAEYrTwentyFive), ConvLSTM (\finConvLSTMMAEYrTwentyFour{} against \finConvLSTMMAEYrTwentyFive) and Earthformer (\finEarthformerMAEYrTwentyFour{} against \finEarthformerMAEYrTwentyFive), but not for climatology (\finClimMAEYrTwentyFour{} against \finClimMAEYrTwentyFive); no per-season test was run. ConvLSTM's 2024 coverage (\finxCovTwentyFourConvLSTM) was the lowest of the GBM and neural models.
+
+\begin{table}[t]
+\caption{Results by lead. Top: pooled MAE. Middle: block-level tests; percentages are relative to the reference's mean block MAE, negative values mean the GBM error is lower, wins are of \finNTestBlocks, and all GBM vs persistence and vs climatology $p$-values are \finxLeadOneGbmVsClimP. Bottom: 80\% interval coverage and share below P10.}
+\label{tab:lead}\centering\footnotesize\setlength{\tabcolsep}{2.1pt}
+\begin{tabular}{lrrr}\toprule
+& Lead 1 & Lead 2 & Lead 3\\\midrule
+Persistence MAE & \finPersMAELeadOne & \finPersMAELeadTwo & \finPersMAELeadThree\\
+Climatology MAE & \finClimMAELeadOne & \finClimMAELeadTwo & \finClimMAELeadThree\\
+GBM MAE & \finGbmMAELeadOne & \finGbmMAELeadTwo & \finGbmMAELeadThree\\
+ConvLSTM MAE & \finConvLSTMMAELeadOne & \finConvLSTMMAELeadTwo & \finConvLSTMMAELeadThree\\
+Earthformer MAE & \finEarthformerMAELeadOne & \finEarthformerMAELeadTwo & \finEarthformerMAELeadThree\\\midrule
+GBM vs pers.\ (\%, wins) & $\finxLeadOneGbmVsPersRel$, \finxLeadOneGbmVsPersWins & $\finxLeadTwoGbmVsPersRel$, \finxLeadTwoGbmVsPersWins & $\finxLeadThreeGbmVsPersRel$, \finxLeadThreeGbmVsPersWins\\
+GBM vs clim.\ (\%, wins) & $\finxLeadOneGbmVsClimRel$, \finxLeadOneGbmVsClimWins & $\finxLeadTwoGbmVsClimRel$, \finxLeadTwoGbmVsClimWins & $\finxLeadThreeGbmVsClimRel$, \finxLeadThreeGbmVsClimWins\\
+ConvLSTM vs GBM ($p$) & \finxLeadOneConvLSTMVsGbmP & \finxLeadTwoConvLSTMVsGbmP & \finxLeadThreeConvLSTMVsGbmP\\
+Earthformer vs GBM ($p$) & \finxLeadOneEarthformerVsGbmP & \finxLeadTwoEarthformerVsGbmP & \finxLeadThreeEarthformerVsGbmP\\
+Earthformer vs ConvLSTM ($p$) & \finxLeadOneEarthformerVsConvLSTMP & \finxLeadTwoEarthformerVsConvLSTMP & \finxLeadThreeEarthformerVsConvLSTMP\\\midrule
+Climatology cov.\ / below & \finxCovLeadOneClim{} / \finxBelowLeadOneClim & \finxCovLeadTwoClim{} / \finxBelowLeadTwoClim & \finxCovLeadThreeClim{} / \finxBelowLeadThreeClim\\
+GBM cov.\ / below & \finxCovLeadOneGbm{} / \finxBelowLeadOneGbm & \finxCovLeadTwoGbm{} / \finxBelowLeadTwoGbm & \finxCovLeadThreeGbm{} / \finxBelowLeadThreeGbm\\
+ConvLSTM cov.\ / below & \finxCovLeadOneConvLSTM{} / \finxBelowLeadOneConvLSTM & \finxCovLeadTwoConvLSTM{} / \finxBelowLeadTwoConvLSTM & \finxCovLeadThreeConvLSTM{} / \finxBelowLeadThreeConvLSTM\\
+Earthformer cov.\ / below & \finxCovLeadOneEarthformer{} / \finxBelowLeadOneEarthformer & \finxCovLeadTwoEarthformer{} / \finxBelowLeadTwoEarthformer & \finxCovLeadThreeEarthformer{} / \finxBelowLeadThreeEarthformer\\\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Weather inputs}
+No weather variant improved the GBM on the test set (Table~\ref{tab:wx}), and every variant has a higher pooled MAE. ERA5 rainfall made no detectable difference (\finGbmRainVsGbmWins{} wins, $p=\finGbmRainVsGbmP$); soil moisture ($p=\finGbmSoilVsGbmP$), CHIRPS rainfall ($p=\finGbmChirpsVsGbmP$), temperature ($p$\,\finGbmTempVsGbmP) and all variables together ($p$\,\finGbmAllVsGbmP) made the forecasts worse at the block level. Every variant's P50 model, and all but one of the variants' P10 and P90 models, reached its lowest validation loss at fewer iterations than the base model, which suggests that the weather columns let the trees fit season-specific patterns in the training years that did not carry over to the validation year.
+
+\begin{table}[t]
+\caption{Weather variants of the GBM. $\Delta$MAE is the mean block MAE difference from the base GBM (positive means worse); wins are blocks of \finNTestBlocks{} in which the variant is better. Iter.: selected iterations for P10/P50/P90.}
+\label{tab:wx}\centering\footnotesize\setlength{\tabcolsep}{2.4pt}
+\begin{tabular}{lrrrrrrr}\toprule
+Variant & MAE & Pin. & Cov. & $\Delta$MAE & Wins & $p$ & Iter.\\\midrule
+Base & \finGbmMAE & \finGbmPin & \finyGbmCov & -- & -- & -- & \finGbmItersTen/\finGbmItersFifty/\finGbmItersNinety\\
++rain & \finGbmRainMAE & \finGbmRainPin & \finyGbmRainCov & $\finGbmRainVsGbmDiff$ & \finGbmRainVsGbmWins & \finGbmRainVsGbmP & \finGbmRainItersTen/\finGbmRainItersFifty/\finGbmRainItersNinety\\
++soil & \finGbmSoilMAE & \finGbmSoilPin & \finyGbmSoilCov & $\finGbmSoilVsGbmDiff$ & \finGbmSoilVsGbmWins & \finGbmSoilVsGbmP & \finGbmSoilItersTen/\finGbmSoilItersFifty/\finGbmSoilItersNinety\\
++temp & \finGbmTempMAE & \finGbmTempPin & \finyGbmTempCov & $\finGbmTempVsGbmDiff$ & \finGbmTempVsGbmWins & \finGbmTempVsGbmP & \finGbmTempItersTen/\finGbmTempItersFifty/\finGbmTempItersNinety\\
++CHIRPS & \finGbmChirpsMAE & \finGbmChirpsPin & \finyGbmChirpsCov & $\finGbmChirpsVsGbmDiff$ & \finGbmChirpsVsGbmWins & \finGbmChirpsVsGbmP & \finGbmChirpsItersTen/\finGbmChirpsItersFifty/\finGbmChirpsItersNinety\\
++all & \finGbmAllMAE & \finGbmAllPin & \finyGbmAllCov & $\finGbmAllVsGbmDiff$ & \finGbmAllVsGbmWins & \finGbmAllVsGbmP & \finGbmAllItersTen/\finGbmAllItersFifty/\finGbmAllItersNinety\\\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Error by green-last share, cloudiness and region}
+\label{sec:err}
+In \finxGreenLastShare\% of scored forecasts the last clear input still had an NDVI of at least 0.30, so the field was green at issue and, by construction of the mask, non-green at the target. Split by pixel, \finyGreenGainShare\% of the GBM's pooled absolute-error reduction against persistence comes from these green-last forecasts. Across terciles of the units' green-last share (cuts at \finxGreenCutLo\% and \finxGreenCutHi\%; Table~\ref{tab:err}), persistence MAE rises from \finxPersMAEGreenOne{} to \finxPersMAEGreenThree, climatology varies little, and the GBM's reduction relative to persistence grows from \finxGbmGainGreenOne\% to \finxGbmGainGreenThree\%. The GBM still beats persistence and climatology in the least green tercile, and the neural models follow it closely in every tercile, Earthformer being the highest of the three. At the block level the GBM's absolute MAE gain over persistence is correlated with the green-last share (Spearman $\rho=\finRhoGainGreen$, $p=\finRhoPGainGreen$; shares from \finyRangeGreenLo\% to \finyRangeGreenHi\%).
+
+Cloudiness explains little of the variation between blocks: clear-observation rates range from \finyRangeClearLo\% to \finyRangeClearHi\%, and neither persistence ($p=\finRhoPPersClear$) nor GBM error ($p=\finRhoPGbmClear$) is significantly related to them. Persistence error is higher in the least clear tercile of units (\finPersMAEClearLow{} against \finPersMAEClearHigh), plausibly because older last observations are more often pre-harvest, while GBM error barely changes. The clear-rate terciles and the block correlations were computed only for persistence, climatology and the GBM, not for the neural models.
+
+By region (Table~\ref{tab:err}, MAE only, no tests), Marathwada has the highest pooled error for the GBM and both neural models, and Vidarbha the lowest among the four large divisions. Persistence error is well above climatology in every division except Konkan, most of all in Nashik. With \finyNBlocksKonkan{} to \finyNBlocksVidarbha{} test blocks per division, these figures are descriptive (Section~\ref{sec:region}).
+
+\begin{table}[t]
+\caption{Pooled MAE by green-last tercile and by division. Green: percentage of scored pixels whose last clear input was green (NDVI at least 0.30). Gain: GBM MAE reduction as a percentage of persistence MAE. ConvL.: ConvLSTM; Earthf.: Earthformer (means of seeds). $n$: test blocks.}
+\label{tab:err}\centering\scriptsize\setlength{\tabcolsep}{1.9pt}
+\begin{tabular}{lrrrrrrr}\toprule
+Subset & Green & Pers. & Clim. & GBM & ConvL. & Earthf. & Gain\\\midrule
+Tercile 1 & \finxGreenTercileShareOne & \finxPersMAEGreenOne & \finxClimMAEGreenOne & \finxGbmMAEGreenOne & \finxConvLSTMMAEGreenOne & \finxEarthformerMAEGreenOne & \finxGbmGainGreenOne\\
+Tercile 2 & \finxGreenTercileShareTwo & \finxPersMAEGreenTwo & \finxClimMAEGreenTwo & \finxGbmMAEGreenTwo & \finxConvLSTMMAEGreenTwo & \finxEarthformerMAEGreenTwo & \finxGbmGainGreenTwo\\
+Tercile 3 & \finxGreenTercileShareThree & \finxPersMAEGreenThree & \finxClimMAEGreenThree & \finxGbmMAEGreenThree & \finxConvLSTMMAEGreenThree & \finxEarthformerMAEGreenThree & \finxGbmGainGreenThree\\\midrule
+Konkan ($n$=\finyNBlocksKonkan) & \finyGreenShareKonkan & \finPersMAEKonkan & \finClimMAEKonkan & \finGbmMAEKonkan & \finConvLSTMMAEKonkan & \finEarthformerMAEKonkan & \finyGbmGainKonkan\\
+Marathwada ($n$=\finyNBlocksMarathwada) & \finyGreenShareMarathwada & \finPersMAEMarathwada & \finClimMAEMarathwada & \finGbmMAEMarathwada & \finConvLSTMMAEMarathwada & \finEarthformerMAEMarathwada & \finyGbmGainMarathwada\\
+Nashik ($n$=\finyNBlocksNashik) & \finyGreenShareNashik & \finPersMAENashik & \finClimMAENashik & \finGbmMAENashik & \finConvLSTMMAENashik & \finEarthformerMAENashik & \finyGbmGainNashik\\
+Pune ($n$=\finyNBlocksPune) & \finyGreenSharePune & \finPersMAEPune & \finClimMAEPune & \finGbmMAEPune & \finConvLSTMMAEPune & \finEarthformerMAEPune & \finyGbmGainPune\\
+Vidarbha ($n$=\finyNBlocksVidarbha) & \finyGreenShareVidarbha & \finPersMAEVidarbha & \finClimMAEVidarbha & \finGbmMAEVidarbha & \finConvLSTMMAEVidarbha & \finEarthformerMAEVidarbha & \finyGbmGainVidarbha\\\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Discussion}
+\subsection{Answer to the research question}
+With both the test region and the test season held out, neither neural model forecast NDTI more accurately than the GBM. ConvLSTM was statistically tied with the GBM. Earthformer was worse than the GBM for every seed, and worse than both the GBM and ConvLSTM at every lead and in both test seasons. The GBM's improvement over persistence largely reflects the target definition; its improvement over climatology is the fairer measure of skill, and that comparison is conservative because climatology uses each test block's own history (Section~\ref{sec:baselines}).
+
+\subsection{Why the GBM matches ConvLSTM}
+\label{sec:tie}
+The target's change over one to three dekads depends mostly on where the pixel stands in its own crop calendar, which the GBM features encode directly. Both families see the last clear observation and, directly or through the clear flags, its age, so both can learn the same harvest-timing correction to persistence. Our hypothesis for the tie is that spatial context adds little: most Indian holdings are small~\cite{agcensus} and neighbouring fields are harvested at different times, so neighbouring pixels probably say little about when a given field will be cleared. This would also fit the strength of tree ensembles on tabular problems~\cite{grinsztajn}. We did not test this hypothesis. A second explanation is equally open: the GBM sees season-to-date NDVI features beyond the neural models' window, so the comparison mixes information access with architecture.
+
+\subsection{Possible reasons for Earthformer's higher error}
+\label{sec:ef}
+Several features of our setup may disadvantage Earthformer, and our experiments cannot separate them. Its \finEarthformerSeedOneParams{} parameters were trained on \finxNTrainSamples{} samples from \finxNTrainBlocks{} training blocks for \finxEpochBudget{} epochs, whereas its SEVIR configuration trains for 100 epochs~\cite{earthformercode}. Its best epochs (\finEarthformerSeedOneBestEpoch, \finEarthformerSeedTwoBestEpoch{} and \finEarthformerSeedThreeBestEpoch) came later than ConvLSTM's (\finConvLSTMSeedOneBestEpoch, \finConvLSTMSeedTwoBestEpoch{} and \finConvLSTMSeedThreeBestEpoch), and one seed peaked at epoch \finEarthformerSeedThreeBestEpoch{} of \finxEpochBudget. A longer schedule might help, but our runs cannot show this because the learning rate decays to one-thousandth of its peak within the budget. Its hyper-parameters were transferred from radar nowcasting without a search, and its stem gives one token per 80\,m, so several small fields can share a token.
+
+\subsection{Why errors differ across regions}
+\label{sec:region}
+The regional pattern in Table~\ref{tab:err} follows the green-last share more than cloudiness. Vidarbha and Nashik have the largest green-last shares and GBM gains over persistence, Pune and Marathwada sit in the middle, and Konkan has the smallest share and the smallest gain, in line with the tested block-level correlation between gain and green-last share. Mean clear-observation rates in the four large divisions differ little (\finyClearRatePune\% to \finyClearRateVidarbha\%). Konkan, the clearest division (\finyClearRateKonkan\%), is the only one where persistence beats climatology, but it has only \finyNBlocksKonkan{} test blocks.
+
+A plausible reading is that divisions with more fields still green at the November and December issue dates give persistence more pre-harvest values to carry forward. Cotton and pigeon pea are harvested after soybean and much of the rice~\cite{desharvest}, so a division's crop mix would shift its green-last share; without crop-type maps this remains an interpretation. Marathwada has a green-last share and clear rate close to Pune's, yet the highest error for the GBM, both neural models and climatology. Its high climatology error suggests that post-harvest NDTI there departs more from each pixel's earlier seasons, so the higher error probably reflects more variable conditions.
+
+\subsection{Use for feedstock planning}
+A forecast of this kind can tell a collection team which parts of a catchment are likely to show residue-like NDTI one to three dekads ahead. A planning system would also need the probability that a field is bare by a given dekad, and purchasable residue also depends on crop type, fodder use and burning, which NDTI does not observe. A conservative plan would rely on the lower quantile. The P10 of the GBM and that of Earthformer are close to nominal (\finyGbmBelow{} and \finyEarthformerBelow{} of targets below them, against a nominal 0.10), whereas ConvLSTM's is too high (\finyConvLSTMBelow), so a plan built on ConvLSTM's lower bound would overstate the lowest likely NDTI.
+
+\subsection{Limitations}
+\label{sec:lim}
+Apart from the conditional target, the evaluation is limited in size: \finNTestBlocks{} blocks, each represented by one 12.8\,km window, and two seasons in the final evaluation. The training side is small too, with \finxNTrainBlocks{} training blocks, as many as the test set, and \finxNValBlocks{} validation blocks in one season, set by cube-building time; this probably limits the neural models, Earthformer most of all, more than the GBM. The regional figures rest on few blocks, \finyNBlocksKonkan{} in Konkan, and were not tested.
+
+The comparison between families is not information-equal: the feature-based models train on up to \finxPerUnitPx{} pixels per unit but see season-to-date NDVI features, while the neural models see every scored pixel of a six-dekad window. Tuning was also unequal across families. WorldCover is fixed to 2021, issue-dekad weather is not available in real time, and the exact reanalysis product behind the Open-Meteo default endpoint was not recorded. NDTI is not residue mass and remains sensitive to soil moisture.
+
+\section{Conclusion}
+For one-to-three-dekad forecasts of NDTI on post-harvest cropland in Maharashtra, a GBM on per-pixel issue-time features was as accurate as ConvLSTM and more accurate than Earthformer. The GBM reached an MAE of \finGbmMAE{} against \finClimMAE{} for climatology, \finxGbmRelMAEVsClim\% lower, and was better than climatology in all \finNTestBlocks{} test blocks, while ConvLSTM was statistically tied with it ($p=\finConvLSTMVsGbmP$). Because the gain over persistence is concentrated in forecasts issued on still-green fields, the gain over climatology should guide use. A light model on open Sentinel-2 data could be used to rank parts of a catchment by expected NDTI, although we did not evaluate ranking skill and the index is not a tonnage.
+
+A GBM restricted to the six-dekad window or neural models given the season-to-date features would separate information access from architecture, and a ConvLSTM with 1$\times$1 kernels would test whether spatial context helps. For operational use, the forecasts would also need a model of the probability that a field is bare by a given dekad and field calibration of NDTI against residue mass.
+
+\section*{Use of AI Tools}
+Generative AI tools were used for copy editing, LaTeX formatting, and routine code assistance. The authors designed the study, reviewed all outputs, and are responsible for the content.
+
+\section*{Code and Data Availability}
+The code and scripts that generate every number, table and figure are submitted with this report; the input data are open.
+
+\section*{Author Contributions}
+Abstract, Introduction (I), Study Area and Data (III), Methods (IV): H. Rathi. Related Work (II), Experimental Design (V): T. Wang. Results (VI), Discussion (VII), Conclusion (VIII): H. Rathi and T. Wang. H. Rathi built the data pipeline and ran the experiments. Time contributed: H. Rathi about 20 hours, T. Wang about 10 hours.
+
+\begin{thebibliography}{99}
+\bibitem{satat} Ministry of Petroleum and Natural Gas, Government of India, ``Sustainable Alternative Towards Affordable Transportation (SATAT),'' 2018. Accessed: Oct. 2026. [Online]. Available: \url{https://satat.co.in}
+\bibitem{hiloidhari} M. Hiloidhari, D. Das, and D. C. Baruah, ``Bioenergy potential from crop residue biomass in India,'' \emph{Renew. Sustain. Energy Rev.}, vol. 32, pp. 504--512, 2014.
+\bibitem{jain} N. Jain, A. Bhatia, and H. Pathak, ``Emission of air pollutants from crop residue burning in India,'' \emph{Aerosol Air Qual. Res.}, vol. 14, no. 1, pp. 422--430, 2014.
+\bibitem{jethva} H. Jethva, O. Torres, R. D. Field, A. Lyapustin, R. Gautam, and V. Kayetha, ``Connecting crop productivity, residue fires, and air quality over northern India,'' \emph{Sci. Rep.}, vol. 9, Art. no. 16594, 2019.
+\bibitem{desharvest} Directorate of Economics and Statistics, Ministry of Agriculture and Farmers Welfare, Government of India, ``Harvesting season of principal crops in major growing states,'' Appendix II, 2015. Accessed: Nov. 2026. [Online]. Available: \url{https://desagri.gov.in/wp-content/uploads/2021/04/Appendix2.pdf}
+\bibitem{vandeventer} A. P. van Deventer, A. D. Ward, P. H. Gowda, and J. G. Lyon, ``Using Thematic Mapper data to identify contrasting soil plains and tillage practices,'' \emph{Photogramm. Eng. Remote Sens.}, vol. 63, no. 1, pp. 87--93, 1997.
+\bibitem{quemada} M. Quemada and C. S. T. Daughtry, ``Spectral indices to improve crop residue cover estimation under varying moisture conditions,'' \emph{Remote Sens.}, vol. 8, no. 8, Art. no. 660, 2016.
+\bibitem{zheng} B. Zheng, J. B. Campbell, G. Serbin, and J. M. Galbraith, ``Remote sensing of crop residue and tillage practices: Present capabilities and future prospects,'' \emph{Soil Tillage Res.}, vol. 138, pp. 26--34, 2014.
+\bibitem{convlstm} X. Shi, Z. Chen, H. Wang, D.-Y. Yeung, W.-K. Wong, and W.-C. Woo, ``Convolutional LSTM network: A machine learning approach for precipitation nowcasting,'' in \emph{Proc. Adv. Neural Inf. Process. Syst.}, vol. 28, 2015, pp. 802--810.
+\bibitem{earthformer} Z. Gao \emph{et al.}, ``Earthformer: Exploring space-time transformers for Earth system forecasting,'' in \emph{Proc. Adv. Neural Inf. Process. Syst.}, vol. 35, 2022, pp. 25390--25403.
+\bibitem{earthformercode} Amazon Science, ``Earthformer: Official implementation,'' GitHub, 2022. Accessed: Nov. 2026. [Online]. Available: \url{https://github.com/amazon-science/earth-forecasting-transformer}
+\bibitem{hively} W. D. Hively, B. T. Lamb, C. S. T. Daughtry, J. Shermeyer, G. W. McCarty, and M. Quemada, ``Mapping crop residue and tillage intensity using WorldView-3 satellite shortwave infrared residue indices,'' \emph{Remote Sens.}, vol. 10, no. 10, Art. no. 1657, 2018.
+\bibitem{sentinel} M. Drusch \emph{et al.}, ``Sentinel-2: ESA's optical high-resolution mission for GMES operational services,'' \emph{Remote Sens. Environ.}, vol. 120, pp. 25--36, 2012.
+\bibitem{sen2cor} M. Main-Knorn, B. Pflug, J. Louis, V. Debaecker, U. M\"{u}ller-Wilm, and F. Gascon, ``Sen2Cor for Sentinel-2,'' in \emph{Proc. SPIE}, vol. 10427, Image and Signal Processing for Remote Sensing XXIII, 2017, Art. no. 1042704.
+\bibitem{timesat} P. J\"{o}nsson and L. Eklundh, ``TIMESAT: A program for analyzing time-series of satellite sensor data,'' \emph{Comput. Geosci.}, vol. 30, no. 8, pp. 833--845, 2004.
+\bibitem{sakamoto} T. Sakamoto \emph{et al.}, ``A crop phenology detection method using time-series MODIS data,'' \emph{Remote Sens. Environ.}, vol. 96, no. 3--4, pp. 366--374, 2005.
+\bibitem{greenearthnet} V. Benson \emph{et al.}, ``Multi-modal learning for geospatial vegetation forecasting,'' in \emph{Proc. IEEE/CVF Conf. Comput. Vis. Pattern Recognit.}, 2024, pp. 27788--27799.
+\bibitem{predrnn} Y. Wang \emph{et al.}, ``PredRNN: A recurrent neural network for spatiotemporal predictive learning,'' \emph{IEEE Trans. Pattern Anal. Mach. Intell.}, vol. 45, no. 2, pp. 2208--2225, 2023.
+\bibitem{simvp} Z. Gao, C. Tan, L. Wu, and S. Z. Li, ``SimVP: Simpler yet better video prediction,'' in \emph{Proc. IEEE/CVF Conf. Comput. Vis. Pattern Recognit.}, 2022, pp. 3170--3180.
+\bibitem{tau} C. Tan \emph{et al.}, ``Temporal attention unit: Towards efficient spatiotemporal predictive learning,'' in \emph{Proc. IEEE/CVF Conf. Comput. Vis. Pattern Recognit.}, 2023, pp. 18770--18782.
+\bibitem{earthnet} C. Requena-Mesa, V. Benson, M. Reichstein, J. Runge, and J. Denzler, ``EarthNet2021: A large-scale dataset and challenge for Earth surface forecasting as a guided video prediction task,'' in \emph{Proc. IEEE/CVF Conf. Comput. Vis. Pattern Recognit. Workshops}, 2021, pp. 1132--1142.
+\bibitem{sevir} M. S. Veillette, S. Samsi, and C. J. Mattioli, ``SEVIR: A storm event imagery dataset for deep learning applications in radar and satellite meteorology,'' in \emph{Proc. Adv. Neural Inf. Process. Syst.}, vol. 33, 2020, pp. 22009--22019.
+\bibitem{prithvi} D. Szwarcman \emph{et al.}, ``Prithvi-EO-2.0: A versatile multi-temporal foundation model for Earth observation applications,'' arXiv:2412.02732, 2024.
+\bibitem{hyndman} R. J. Hyndman and A. B. Koehler, ``Another look at measures of forecast accuracy,'' \emph{Int. J. Forecast.}, vol. 22, no. 4, pp. 679--688, 2006.
+\bibitem{lightgbm} G. Ke \emph{et al.}, ``LightGBM: A highly efficient gradient boosting decision tree,'' in \emph{Proc. Adv. Neural Inf. Process. Syst.}, vol. 30, 2017, pp. 3146--3154.
+\bibitem{grinsztajn} L. Grinsztajn, E. Oyallon, and G. Varoquaux, ``Why do tree-based models still outperform deep learning on typical tabular data?'' in \emph{Proc. Adv. Neural Inf. Process. Syst.}, vol. 35, 2022, pp. 507--520.
+\bibitem{quantile} R. Koenker and G. Bassett, Jr., ``Regression quantiles,'' \emph{Econometrica}, vol. 46, no. 1, pp. 33--50, 1978.
+\bibitem{roberts} D. R. Roberts \emph{et al.}, ``Cross-validation strategies for data with temporal, spatial, hierarchical, or phylogenetic structure,'' \emph{Ecography}, vol. 40, no. 8, pp. 913--929, 2017.
+\bibitem{indiamaps} udit-001, ``India maps data: GeoJSON state and district boundaries derived from the Census of India 2011 district maps,'' GitHub repository. Accessed: Nov. 2026. [Online]. Available: \url{https://github.com/udit-001/india-maps-data}
+\bibitem{worldcover} D. Zanaga \emph{et al.}, ``ESA WorldCover 10 m 2021 v200,'' Zenodo, 2022, doi: 10.5281/zenodo.7254221.
+\bibitem{earthsearch} Element 84, ``Earth Search STAC API,'' 2024. Accessed: Oct. 2026. [Online]. Available: \url{https://earth-search.aws.element84.com/v1}
+\bibitem{openmeteo} Open-Meteo, ``Historical weather API,'' 2024. Accessed: Oct. 2026. [Online]. Available: \url{https://open-meteo.com/en/docs/historical-weather-api}
+\bibitem{era5} H. Hersbach \emph{et al.}, ``The ERA5 global reanalysis,'' \emph{Q. J. R. Meteorol. Soc.}, vol. 146, no. 730, pp. 1999--2049, 2020.
+\bibitem{chirps} C. Funk \emph{et al.}, ``The climate hazards infrared precipitation with stations: A new environmental record for monitoring extremes,'' \emph{Sci. Data}, vol. 2, Art. no. 150066, 2015.
+\bibitem{climateserv} SERVIR, ``ClimateSERV,'' NASA and USAID, 2026. Accessed: Oct. 2026. [Online]. Available: \url{https://climateserv.servirglobal.net}
+\bibitem{sklearn} F. Pedregosa \emph{et al.}, ``Scikit-learn: Machine learning in Python,'' \emph{J. Mach. Learn. Res.}, vol. 12, pp. 2825--2830, 2011.
+\bibitem{adamw} I. Loshchilov and F. Hutter, ``Decoupled weight decay regularization,'' in \emph{Proc. Int. Conf. Learn. Represent.}, 2019.
+\bibitem{goyal} P. Goyal \emph{et al.}, ``Accurate, large minibatch SGD: Training ImageNet in 1 hour,'' arXiv:1706.02677, 2017.
+\bibitem{wilcoxon} F. Wilcoxon, ``Individual comparisons by ranking methods,'' \emph{Biometrics Bull.}, vol. 1, no. 6, pp. 80--83, 1945.
+\bibitem{efron} B. Efron, ``Bootstrap methods: Another look at the jackknife,'' \emph{Ann. Statist.}, vol. 7, no. 1, pp. 1--26, 1979.
+\bibitem{agcensus} Department of Agriculture, Cooperation and Farmers Welfare, Government of India, ``Agriculture Census 2015-16: All India report on number and area of operational holdings (provisional),'' New Delhi, India, 2018. Accessed: Nov. 2026. [Online]. Available: \url{https://agcensus.nic.in}
+\end{thebibliography}
+\end{document}

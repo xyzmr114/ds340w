@@ -1,0 +1,64 @@
+model                MAE    RMSE     bias  pinball  cov80   <P10    fb
+persistence       0.0525  0.0787   0.0412   0.0262    nan    nan  0.00
+persistence_ng    0.0525  0.0787   0.0409   0.0262    nan    nan  0.54
+movavg6           0.0866  0.1073   0.0837   0.0433    nan    nan  0.00
+seasonal          0.0476  0.0717   0.0275   0.0238    nan    nan  0.64
+climatology       0.0307  0.0425  -0.0042   0.0108  0.556  0.162  0.46
+ridge             0.0297  0.0426   0.0080   0.0148    nan    nan  0.00
+gbm_base          0.0253  0.0373   0.0040   0.0081  0.780  0.124  0.00
+gbm_rain          0.0255  0.0378   0.0046   0.0082  0.780  0.123  0.00
+gbm_soil          0.0256  0.0379   0.0043   0.0083  0.772  0.130  0.00
+gbm_temp          0.0258  0.0379   0.0022   0.0083  0.762  0.119  0.00
+gbm_chirps        0.0256  0.0378   0.0054   0.0083  0.761  0.145  0.00
+gbm_all           0.0260  0.0381   0.0028   0.0084  0.754  0.139  0.00
+convlstm          0.0252  0.0371   0.0038   0.0081  0.750  0.151  0.00
+earthformer       0.0261  0.0383   0.0021   0.0085  0.758  0.129  0.00
+persistence_ng_vs_persistence      MAE diff -0.0000 CI [-0.0001,+0.0001] wins 15/32 p=0.5988 | pinball diff -0.0000
+movavg6_vs_persistence             MAE diff +0.0335 CI [+0.0296,+0.0367] wins 0/32 p=0.0000 | pinball diff +0.0168
+seasonal_vs_persistence            MAE diff -0.0044 CI [-0.0060,-0.0028] wins 31/32 p=0.0000 | pinball diff -0.0022
+climatology_vs_persistence         MAE diff -0.0212 CI [-0.0272,-0.0146] wins 30/32 p=0.0000 | pinball diff -0.0151
+ridge_vs_persistence               MAE diff -0.0228 CI [-0.0274,-0.0174] wins 32/32 p=0.0000 | pinball diff -0.0114
+gbm_base_vs_persistence            MAE diff -0.0272 CI [-0.0324,-0.0216] wins 32/32 p=0.0000 | pinball diff -0.0179
+gbm_rain_vs_persistence            MAE diff -0.0270 CI [-0.0323,-0.0213] wins 32/32 p=0.0000 | pinball diff -0.0178
+gbm_soil_vs_persistence            MAE diff -0.0269 CI [-0.0320,-0.0212] wins 32/32 p=0.0000 | pinball diff -0.0178
+gbm_temp_vs_persistence            MAE diff -0.0266 CI [-0.0320,-0.0208] wins 32/32 p=0.0000 | pinball diff -0.0177
+gbm_chirps_vs_persistence          MAE diff -0.0269 CI [-0.0320,-0.0214] wins 32/32 p=0.0000 | pinball diff -0.0178
+gbm_all_vs_persistence             MAE diff -0.0264 CI [-0.0318,-0.0206] wins 32/32 p=0.0000 | pinball diff -0.0176
+persistence_vs_gbm_base            MAE diff +0.0272 CI [+0.0216,+0.0324] wins 0/32 p=0.0000 | pinball diff +0.0179
+persistence_ng_vs_gbm_base         MAE diff +0.0272 CI [+0.0215,+0.0324] wins 0/32 p=0.0000 | pinball diff +0.0179
+movavg6_vs_gbm_base                MAE diff +0.0607 CI [+0.0521,+0.0684] wins 0/32 p=0.0000 | pinball diff +0.0346
+seasonal_vs_gbm_base               MAE diff +0.0228 CI [+0.0184,+0.0267] wins 0/32 p=0.0000 | pinball diff +0.0157
+climatology_vs_gbm_base            MAE diff +0.0060 CI [+0.0046,+0.0073] wins 0/32 p=0.0000 | pinball diff +0.0027
+ridge_vs_gbm_base                  MAE diff +0.0044 CI [+0.0034,+0.0054] wins 1/32 p=0.0000 | pinball diff +0.0065
+gbm_rain_vs_gbm_base               MAE diff +0.0002 CI [-0.0000,+0.0004] wins 13/32 p=0.1064 | pinball diff +0.0001
+gbm_soil_vs_gbm_base               MAE diff +0.0003 CI [+0.0001,+0.0006] wins 8/32 p=0.0008 | pinball diff +0.0001
+gbm_temp_vs_gbm_base               MAE diff +0.0006 CI [+0.0003,+0.0009] wins 5/32 p=0.0001 | pinball diff +0.0002
+gbm_chirps_vs_gbm_base             MAE diff +0.0003 CI [-0.0000,+0.0005] wins 9/32 p=0.0156 | pinball diff +0.0001
+gbm_all_vs_gbm_base                MAE diff +0.0007 CI [+0.0005,+0.0010] wins 3/32 p=0.0000 | pinball diff +0.0002
+convlstm_vs_persistence            MAE diff -0.0270 CI [-0.0322,-0.0216] wins 32/32 p=0.0000 | pinball diff -0.0178
+earthformer_vs_persistence         MAE diff -0.0260 CI [-0.0310,-0.0207] wins 32/32 p=0.0000 | pinball diff -0.0175
+convlstm_vs_gbm_base               MAE diff +0.0002 CI [-0.0003,+0.0006] wins 17/32 p=0.6645 | pinball diff +0.0000
+earthformer_vs_gbm_base            MAE diff +0.0012 CI [+0.0005,+0.0017] wins 9/32 p=0.0004 | pinball diff +0.0004
+earthformer_vs_convlstm            MAE diff +0.0010 CI [+0.0007,+0.0013] wins 2/32 p=0.0000 | pinball diff +0.0004
+convlstm_s340_vs_gbm_base          MAE diff +0.0006 CI [+0.0000,+0.0012] wins 13/32 p=0.0595 | pinball diff +0.0001
+convlstm_s340_vs_persistence       MAE diff -0.0266 CI [-0.0315,-0.0214] wins 32/32 p=0.0000 | pinball diff -0.0177
+convlstm_s341_vs_gbm_base          MAE diff -0.0002 CI [-0.0007,+0.0003] wins 20/32 p=0.2169 | pinball diff -0.0001
+convlstm_s341_vs_persistence       MAE diff -0.0274 CI [-0.0327,-0.0219] wins 32/32 p=0.0000 | pinball diff -0.0180
+convlstm_s342_vs_gbm_base          MAE diff +0.0001 CI [-0.0004,+0.0006] wins 16/32 p=0.9192 | pinball diff +0.0001
+convlstm_s342_vs_persistence       MAE diff -0.0271 CI [-0.0324,-0.0216] wins 32/32 p=0.0000 | pinball diff -0.0178
+earthformer_s340_vs_gbm_base       MAE diff +0.0011 CI [+0.0005,+0.0017] wins 9/32 p=0.0006 | pinball diff +0.0004
+earthformer_s340_vs_persistence    MAE diff -0.0261 CI [-0.0310,-0.0207] wins 32/32 p=0.0000 | pinball diff -0.0175
+earthformer_s341_vs_gbm_base       MAE diff +0.0016 CI [+0.0008,+0.0023] wins 7/32 p=0.0001 | pinball diff +0.0005
+earthformer_s341_vs_persistence    MAE diff -0.0256 CI [-0.0303,-0.0205] wins 32/32 p=0.0000 | pinball diff -0.0174
+earthformer_s342_vs_gbm_base       MAE diff +0.0008 CI [+0.0000,+0.0015] wins 12/32 p=0.0125 | pinball diff +0.0003
+earthformer_s342_vs_persistence    MAE diff -0.0264 CI [-0.0317,-0.0209] wins 32/32 p=0.0000 | pinball diff -0.0176
+neural seeds used {'convlstm': [340, 341, 342], 'earthformer': [340, 341, 342]}, skipped []
+  convlstm_s340    MAE 0.0257 pinball 0.0082 cov80 0.749 best epoch 6/12 (early_stopping) 210 min peak 3.62 GB 759369 params
+  convlstm_s341    MAE 0.0249 pinball 0.0080 cov80 0.753 best epoch 6/12 (early_stopping) 208 min peak 3.64 GB 759369 params
+  convlstm_s342    MAE 0.0250 pinball 0.0081 cov80 0.748 best epoch 7/12 (epoch_budget) 274 min peak 3.63 GB 759369 params
+  earthformer_s340 MAE 0.0260 pinball 0.0085 cov80 0.781 best epoch 8/12 (epoch_budget) 260 min peak 4.26 GB 8654935 params
+  earthformer_s341 MAE 0.0264 pinball 0.0085 cov80 0.750 best epoch 8/12 (epoch_budget) 329 min peak 0.16 GB 8654935 params
+  earthformer_s342 MAE 0.0258 pinball 0.0084 cov80 0.742 best epoch 10/12 (epoch_budget) 287 min peak 4.09 GB 8654935 params
+  convlstm         3 seeds: MAE 0.0252 sd 0.000421 | pinball 0.0081 sd 0.000116 (1.43%) [0.00801, 0.00824] | same units 1137, gbm_base pinball 0.0081
+  earthformer      3 seeds: MAE 0.0261 sd 0.000304 | pinball 0.0085 sd 0.000069 (0.81%) [0.00839, 0.00852] | same units 1137, gbm_base pinball 0.0081
+{"test_blocks": 32, "superblocks": 17, "units_core": 1137, "units_all_models": 1137, "pixel_forecasts": 50144593, "train_rows": 1420026, "val_rows": 89907, "seasons": [2024, 2025], "regions": ["Konkan", "Marathwada", "Nashik", "Pune", "Vidarbha"]}
