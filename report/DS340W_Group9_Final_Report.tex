@@ -19,7 +19,11 @@
 \maketitle
 
 \begin{abstract}
-Compressed biogas (CBG) plants that run on crop residue need to know when fields will be harvested and left with exposed residue. We forecast the Normalized Difference Tillage Index (NDTI), a shortwave-infrared proxy for residue cover, one to three dekads (ten-day periods) ahead on post-harvest cropland across Maharashtra, India, from 20\,m Sentinel-2 composites. Models were trained on 2018--2022, selected on 2023 and tested on the 2024 and 2025 monsoon-season (kharif) harvests in \finNTestBlocks{} grid blocks from held-out groups of neighbouring grid cells. The target is defined only where a cropland pixel is clear and non-green (NDVI below 0.30) at the target dekad. Scored on the same \finNPixelForecasts{} pixel forecasts, a quantile gradient-boosting model (GBM) reaches a mean absolute error (MAE) of \finGbmMAE, against \finPersMAE{} for persistence and \finClimMAE{} for climatology, and is better than both in every test block. Because \finyGreenGainShare\% of its gain over persistence comes from pixels whose last clear input was still green, climatology is the fairer reference; against it the pooled MAE reduction is \finxGbmRelMAEVsClim\%. ConvLSTM is statistically indistinguishable from the GBM (block-level Wilcoxon $p=\finConvLSTMVsGbmP$), and Earthformer is significantly worse than both. Weather inputs did not improve the GBM.
+\textit{In short, a lightweight tree-based model can tell, 10 to 30 days ahead, which farm fields in Maharashtra will be bare after harvest -- about as accurately as a large neural network, and clearly better than simply assuming a field still looks the way it last did.}
+
+Compressed biogas (CBG) plants that run on crop residue need to know when fields will be harvested and left with exposed residue. We forecast the Normalized Difference Tillage Index (NDTI), a shortwave-infrared proxy for residue cover, one to three dekads (ten-day periods) ahead on post-harvest cropland across Maharashtra, India, from 20\,m Sentinel-2 composites. Models were trained on 2018--2022, selected on 2023 and tested on the 2024 and 2025 monsoon-season (kharif) harvests in \finNTestBlocks{} grid blocks from held-out groups of neighbouring grid cells, scored only where a cropland pixel is clear and not green (NDVI below 0.30) at the target dekad.
+
+A quantile gradient-boosting model (GBM) reaches a mean absolute error (MAE) of \finGbmMAE{} on \finNPixelForecasts{} pixel forecasts, beating both persistence (\finPersMAE) and climatology (\finClimMAE) in every test block; because much of its edge over persistence comes from fields that were still green at the last observation, climatology -- against which the pooled MAE reduction is \finxGbmRelMAEVsClim\% -- is the fairer comparison. A much larger neural network, ConvLSTM, performs no better than the GBM (block-level Wilcoxon $p=\finConvLSTMVsGbmP$), and a newer architecture, Earthformer, performs worse than both. Weather inputs did not improve the GBM.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -126,6 +130,14 @@ Pixels within a block are correlated and units overlap in time, so inference use
 Each neural model was trained with seeds 340, 341 and 342. The aggregate for an architecture is the mean of the three per-seed metrics; the seed forecasts were never averaged into an ensemble. ConvLSTM seed 341 was resumed after an interruption, and Earthformer seed 341 was re-scored from its best checkpoint after a crash; neither is bit-for-bit reproducible.
 
 \section{Results}
+Fig.~\ref{fig:headline} gives the headline comparison before the detailed breakdowns below: on pooled test pixels, the GBM and ConvLSTM reach the lowest and statistically indistinguishable MAE, Earthformer trails both, and all three beat the climatology and persistence baselines.
+
+\begin{figure}[t]
+\centering\includegraphics[width=0.85\columnwidth]{fig_headline.pdf}
+\caption{Pooled test MAE for the five headline models (lower is better). The GBM, a lightweight tree model, matches the much larger ConvLSTM neural network and beats the newer Earthformer architecture and both training-free baselines.}
+\label{fig:headline}
+\end{figure}
+
 \subsection{Baselines and the GBM}
 \label{sec:base}
 Table~\ref{tab:main} gives pooled scores, and Fig.~\ref{fig:res} shows MAE by lead and block-level differences. Persistence has a strong upward bias ($\finPersBias$), because many of its forecasts carry a pre-harvest NDTI value into a non-green target. The six-dekad mean averages over more of the green period and is worse than persistence in every block. Non-green persistence is indistinguishable from persistence (\finPersNGVsPersWins{} wins, $p=\finPersNGVsPersP$). Seasonal persistence beats persistence in \finSeasVsPersWins{} of \finNTestBlocks{} blocks (MAE \finSeasMAE) but loses to climatology in all but \finSeasVsClimWins{} blocks ($p$\,\finSeasVsClimP). Because \finxFallbackSeas\% of its forecasts fall back to persistence, it is not a strong reference in this setting.
